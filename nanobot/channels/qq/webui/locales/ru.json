@@ -1,0 +1,39 @@
+{
+  "setup": {
+    "docsLabel": "Открыть настройку QQ",
+    "officialLabel": "Открыть консоль бота QQ",
+    "fields": {
+      "appId": {
+        "label": "ID приложения",
+        "placeholder": "ID приложения бота QQ"
+      },
+      "secret": {
+        "label": "Секрет",
+        "placeholder": "••••••"
+      },
+      "allowFrom": {
+        "label": "Разрешенные пользователи",
+        "placeholder": "Open ID, через запятую"
+      },
+      "msgFormat": {
+        "label": "Формат сообщения",
+        "choices": {
+          "plain": "Обычный текст",
+          "markdown": "Markdown"
+        }
+      },
+      "ackMessage": {
+        "label": "Сообщение об подтверждении"
+      },
+      "mediaDir": {
+        "label": "Каталог медиа"
+      },
+      "downloadChunkSize": {
+        "label": "Размер чанка загрузки"
+      },
+      "downloadMaxBytes": {
+        "label": "Максимальный размер загрузки"
+      }
+    }
+  }
+}

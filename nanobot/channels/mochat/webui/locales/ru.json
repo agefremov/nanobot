@@ -1,0 +1,85 @@
+{
+  "setup": {
+    "docsLabel": "Открыть руководство по настройке MoChat",
+    "officialLabel": "Открыть MoChat",
+    "fields": {
+      "clawToken": {
+        "label": "Токен Claw",
+        "placeholder": "Токен Claw MoChat"
+      },
+      "baseUrl": {
+        "label": "URL сервера",
+        "placeholder": "https://mochat.io"
+      },
+      "agentUserId": {
+        "label": "ID пользователя агента",
+        "placeholder": "Необязательный ID пользователя агента"
+      },
+      "sessions": {
+        "label": "Сессии",
+        "placeholder": "ID сессий, через запятую"
+      },
+      "panels": {
+        "label": "Панели",
+        "placeholder": "ID панелей, через запятую"
+      },
+      "allowFrom": {
+        "label": "Разрешенные пользователи",
+        "placeholder": "ID пользователей, через запятую"
+      },
+      "socketUrl": {
+        "label": "URL сокета"
+      },
+      "socketPath": {
+        "label": "Путь сокета"
+      },
+      "socketDisableMsgpack": {
+        "label": "Отключить MessagePack",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "socketReconnectDelayMs": {
+        "label": "Задержка повторного подключения"
+      },
+      "socketMaxReconnectDelayMs": {
+        "label": "Максимальная задержка повторного подключения"
+      },
+      "socketConnectTimeoutMs": {
+        "label": "Тайм-аут подключения"
+      },
+      "refreshIntervalMs": {
+        "label": "Интервал обновления"
+      },
+      "watchTimeoutMs": {
+        "label": "Тайм-аут наблюдения"
+      },
+      "watchLimit": {
+        "label": "Размер партии наблюдения"
+      },
+      "retryDelayMs": {
+        "label": "Задержка повторной попытки"
+      },
+      "maxRetryAttempts": {
+        "label": "Максимальное количество попыток"
+      },
+      "mention_requireInGroups": {
+        "label": "Требовать упоминания в группах",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "groups": {
+        "label": "Правила групп (JSON)"
+      },
+      "replyDelayMode": {
+        "label": "Режим задержки ответа"
+      },
+      "replyDelayMs": {
+        "label": "Задержка ответа"
+      }
+    }
+  }
+}

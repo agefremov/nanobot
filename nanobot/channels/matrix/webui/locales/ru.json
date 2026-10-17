@@ -1,0 +1,83 @@
+{
+  "setup": {
+    "docsLabel": "Открыть настройки Matrix",
+    "officialLabel": "Открыть клиенты Matrix",
+    "fields": {
+      "homeserver": {
+        "label": "Домашний сервер",
+        "placeholder": "https://matrix.org"
+      },
+      "userId": {
+        "label": "ID пользователя",
+        "placeholder": "@nanobot:matrix.org"
+      },
+      "password": {
+        "label": "Пароль",
+        "placeholder": "••••••"
+      },
+      "accessToken": {
+        "label": "Токен доступа",
+        "placeholder": "Введите токен доступа"
+      },
+      "deviceId": {
+        "label": "ID устройства",
+        "placeholder": "Обязательно с токеном доступа"
+      },
+      "groupPolicy": {
+        "label": "Поведение группы",
+        "choices": {
+          "mention": "Только упоминания",
+          "open": "Все сообщения",
+          "allowlist": "Разрешённый список"
+        }
+      },
+      "allowFrom": {
+        "label": "Разрешённые пользователи"
+      },
+      "e2eeEnabled": {
+        "label": "Шифрование end-to-end",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "sasVerification": {
+        "label": "Проверка SAS",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "syncStopGraceSeconds": {
+        "label": "Период ожидания остановки синхронизации"
+      },
+      "maxMediaBytes": {
+        "label": "Максимальный размер медиа"
+      },
+      "maxConcurrentMediaDownloads": {
+        "label": "Параллельные загрузки медиа"
+      },
+      "groupAllowFrom": {
+        "label": "Разрешённые группы"
+      },
+      "allowRoomMentions": {
+        "label": "Разрешить упоминания комнат",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "streaming": {
+        "label": "Потоковая передача",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "proxy": {
+        "label": "Сетевой прокси",
+        "placeholder": "http://127.0.0.1:7890"
+      }
+    }
+  }
+}

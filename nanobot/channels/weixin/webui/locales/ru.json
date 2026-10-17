@@ -1,0 +1,74 @@
+{
+  "setup": {
+    "primaryAction": "Подключить WeChat",
+    "docsLabel": "Открыть настройки WeChat",
+    "officialLabel": "Открыть WeChat",
+    "fields": {
+      "allowFrom": {
+        "label": "Разрешенные пользователи",
+        "placeholder": "ID пользователей, через запятую"
+      },
+      "token": {
+        "label": "Токен",
+        "placeholder": "Сохранено при входе по QR"
+      },
+      "sendProgress": {
+        "label": "Отправить прогресс"
+      },
+      "sendToolHints": {
+        "label": "Отправить сводки активности инструментов"
+      },
+      "streaming": {
+        "label": "Использовать streaming API"
+      },
+      "replyProgressMessages": {
+        "label": "Отправить структурированный прогресс"
+      },
+      "replyProgressMaxMessages": {
+        "label": "Лимит структурированного прогресса"
+      },
+      "contextMessageBudget": {
+        "label": "Лимит контекстных сообщений"
+      },
+      "blockStreaming": {
+        "label": "Отправить блоки ответов"
+      },
+      "blockStreamingMinChars": {
+        "label": "Минимальный размер блока"
+      },
+      "blockStreamingMaxMessages": {
+        "label": "Лимит сообщений блока"
+      },
+      "baseUrl": {
+        "label": "API URL"
+      },
+      "cdnBaseUrl": {
+        "label": "CDN URL"
+      },
+      "routeTag": {
+        "label": "Маркер маршрута"
+      },
+      "stateDir": {
+        "label": "Каталог состояния"
+      },
+      "pollTimeout": {
+        "label": "Таймаут опроса (секунды)"
+      }
+    }
+  },
+  "custom": {
+    "qrAlt": "QR-код для входа в WeChat",
+    "scanTitle": "Сканируйте с WeChat",
+    "waiting": "Ожидание, пока вы не отсканируете с WeChat…",
+    "connected": "WeChat подключен.",
+    "stopped": "Вход в WeChat остановлен.",
+    "connecting": "Подключение...",
+    "verifyTitle": "Требуется подтверждение",
+    "verifyDescription": "Введите номер, показанный в WeChat, чтобы продолжить.",
+    "verifyMismatch": "Этот код не совпадает. Введите новый номер, показанный в WeChat.",
+    "expired": "Срок действия входа в WeChat истек. Сканируйте снова, чтобы переподключиться.",
+    "failed": "Не удалось подключить WeChat. Попробуйте снова.",
+    "verifyPlaceholder": "Код",
+    "verifySubmit": "Подтвердить"
+  }
+}

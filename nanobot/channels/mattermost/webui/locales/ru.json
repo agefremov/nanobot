@@ -1,0 +1,112 @@
+{
+  "setup": {
+    "docsLabel": "Открыть настройку Mattermost",
+    "officialLabel": "Открыть руководство по боту Mattermost",
+    "fields": {
+      "serverUrl": {
+        "label": "URL сервера",
+        "placeholder": "https://mattermost.example.com"
+      },
+      "token": {
+        "label": "Токен бота",
+        "placeholder": "Токен бота Mattermost"
+      },
+      "teamId": {
+        "label": "ID команды",
+        "placeholder": "Необязательный ID команды"
+      },
+      "groupPolicy": {
+        "label": "Поведение канала",
+        "choices": {
+          "mention": "Только упоминания",
+          "open": "Все сообщения",
+          "allowlist": "Разрешённые"
+        }
+      },
+      "groupPolicyInThread": {
+        "label": "Поведение в теме",
+        "choices": {
+          "mention": "Только упоминания",
+          "open": "Все сообщения (упоминание не требуется)",
+          "allowlist": "Разрешённые"
+        }
+      },
+      "allowFrom": {
+        "label": "Разрешённые пользователи",
+        "placeholder": "ID пользователей, через запятую"
+      },
+      "allowFromMatchMode": {
+        "label": "Совпадение пользователей",
+        "choices": {
+          "email": "Электронная почта",
+          "id": "ID пользователя",
+          "username": "Имя пользователя"
+        }
+      },
+      "groupAllowFrom": {
+        "label": "Разрешённые каналы"
+      },
+      "replyInThread": {
+        "label": "Ответ в теме",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "includeThreadContext": {
+        "label": "Включить контекст темы",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "threadContextLimit": {
+        "label": "Лимит контекста темы"
+      },
+      "streaming": {
+        "label": "Потоковая передача",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "reactEmoji": {
+        "label": "Эмодзи для реакции"
+      },
+      "doneEmoji": {
+        "label": "Эмодзи завершения"
+      },
+      "sendProgress": {
+        "label": "Отправить прогресс",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "sendToolHints": {
+        "label": "Отправить подсказки по инструментам",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "dm_enabled": {
+        "label": "Включить прямые сообщения",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "dm_policy": {
+        "label": "Доступ к прямым сообщениям",
+        "choices": {
+          "allowlist": "Разрешённые",
+          "open": "Открыто"
+        }
+      },
+      "dm_allowFrom": {
+        "label": "Разрешённые пользователи для прямых сообщений"
+      }
+    }
+  }
+}

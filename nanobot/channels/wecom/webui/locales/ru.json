@@ -1,0 +1,23 @@
+{
+  "setup": {
+    "docsLabel": "Открыть настройку WeCom",
+    "officialLabel": "Открыть консоль WeCom",
+    "fields": {
+      "botId": {
+        "label": "ID бота",
+        "placeholder": "ID бота WeCom"
+      },
+      "secret": {
+        "label": "Секрет",
+        "placeholder": "••••••"
+      },
+      "allowFrom": {
+        "label": "Разрешенные пользователи",
+        "placeholder": "ID пользователей, через запятую"
+      },
+      "welcomeMessage": {
+        "label": "Приветственное сообщение"
+      }
+    }
+  }
+}

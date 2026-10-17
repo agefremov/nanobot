@@ -1,0 +1,56 @@
+{
+  "setup": {
+    "docsLabel": "Открыть настройки Discord",
+    "officialLabel": "Открыть портал Discord",
+    "fields": {
+      "token": {
+        "label": "Токен бота",
+        "placeholder": "Токен бота Discord"
+      },
+      "allowChannels": {
+        "label": "Разрешенные каналы",
+        "placeholder": "ID каналов, через запятую"
+      },
+      "groupPolicy": {
+        "label": "Поведение группы",
+        "choices": {
+          "mention": "Только упоминания",
+          "open": "Все сообщения",
+          "allowlist": "Разрешенный список"
+        }
+      },
+      "allowFrom": {
+        "label": "Разрешенные пользователи",
+        "placeholder": "ID пользователей, через запятую"
+      },
+      "proxy": {
+        "label": "Сетевой прокси"
+      },
+      "proxyUsername": {
+        "label": "Имя пользователя прокси"
+      },
+      "proxyPassword": {
+        "label": "Пароль прокси"
+      },
+      "intents": {
+        "label": "Интенции шлюза"
+      },
+      "readReceiptEmoji": {
+        "label": "Эмодзи прочтения"
+      },
+      "workingEmoji": {
+        "label": "Эмодзи в работе"
+      },
+      "workingEmojiDelay": {
+        "label": "Задержка эмодзи в работе"
+      },
+      "streaming": {
+        "label": "Стриминг",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      }
+    }
+  }
+}

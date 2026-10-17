@@ -1,0 +1,87 @@
+{
+  "setup": {
+    "primaryAction": "Подключиться к Feishu",
+    "docsLabel": "Открыть настройки Feishu",
+    "officialLabel": "Открыть консоль Feishu",
+    "fields": {
+      "appId": {
+        "label": "ID приложения",
+        "placeholder": "cli_xxx"
+      },
+      "appSecret": {
+        "label": "Секрет приложения",
+        "placeholder": "Оставьте пустым, чтобы сохранить текущий секрет"
+      },
+      "domain": {
+        "label": "Регион",
+        "choices": {
+          "feishu": "Feishu",
+          "lark": "Lark"
+        }
+      },
+      "groupPolicy": {
+        "label": "Поведение группы",
+        "choices": {
+          "mention": "Только упоминания",
+          "open": "Все сообщения",
+          "allowlist": "Разрешённые"
+        }
+      },
+      "allowFrom": {
+        "label": "Разрешённые пользователи",
+        "placeholder": "ID пользователей, через запятую"
+      },
+      "topicIsolation": {
+        "label": "Изоляция тем",
+        "choices": {
+          "true": "Отдельная сессия для каждой темы",
+          "false": "Одна общая сессия для группы"
+        }
+      },
+      "name": {
+        "label": "Имя аккаунта"
+      },
+      "encryptKey": {
+        "label": "Ключ шифрования"
+      },
+      "verificationToken": {
+        "label": "Токен проверки"
+      },
+      "reactEmoji": {
+        "label": "Эмодзи реакции"
+      },
+      "doneEmoji": {
+        "label": "Эмодзи завершения"
+      },
+      "toolHintPrefix": {
+        "label": "Префикс подсказки инструмента"
+      },
+      "replyToMessage": {
+        "label": "Ответить на сообщение",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "streaming": {
+        "label": "Потоковая передача",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      }
+    }
+  },
+  "custom": {
+    "toggleAssistant": "Ассистент {{name}}",
+    "configured": "Подключено",
+    "needsSetup": "Требуется авторизация",
+    "qrAlt": "QR-код подключения Feishu",
+    "scanTitle": "Сканировать с помощью Feishu",
+    "scanDescription": "Используйте Feishu или Lark на вашем телефоне, чтобы отсканировать этот код. nanobot завершит настройку автоматически после авторизации.",
+    "waiting": "Ожидание авторизации...",
+    "connected": "Feishu подключен.",
+    "stopped": "Подключение остановлено.",
+    "connecting": "Подключение..."
+  }
+}

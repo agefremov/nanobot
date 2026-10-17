@@ -1,0 +1,74 @@
+{
+  "setup": {
+    "docsLabel": "Открыть настройки Teams",
+    "officialLabel": "Открыть портал разработчиков Teams",
+    "fields": {
+      "appId": {
+        "label": "ID приложения",
+        "placeholder": "ID приложения Microsoft"
+      },
+      "appPassword": {
+        "label": "Секрет клиента",
+        "placeholder": "••••••"
+      },
+      "tenantId": {
+        "label": "ID арендатора",
+        "placeholder": "Необязательный ID арендатора"
+      },
+      "path": {
+        "label": "Путь обратного вызова",
+        "placeholder": "/api/messages"
+      },
+      "allowFrom": {
+        "label": "Разрешенные пользователи",
+        "placeholder": "ID пользователей Teams, через запятую"
+      },
+      "host": {
+        "label": "Хост для прослушивания"
+      },
+      "port": {
+        "label": "Порт для прослушивания"
+      },
+      "replyInThread": {
+        "label": "Ответ в потоке",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "mentionOnlyResponse": {
+        "label": "Ответ только на упоминания"
+      },
+      "validateInboundAuth": {
+        "label": "Проверять входящие запросы",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "refTtlDays": {
+        "label": "Срок жизни разговора"
+      },
+      "pruneWebChatRefs": {
+        "label": "Удалить разговоры Web Chat",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "pruneNonPersonalRefs": {
+        "label": "Удалить неперсональные разговоры",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "refTouchIntervalS": {
+        "label": "Интервал обновления разговора"
+      },
+      "trustedServiceUrlHosts": {
+        "label": "Доверенные хосты сервисов"
+      }
+    }
+  }
+}

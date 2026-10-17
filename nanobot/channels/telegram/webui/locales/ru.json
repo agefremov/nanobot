@@ -1,0 +1,93 @@
+{
+  "setup": {
+    "docsLabel": "Открыть настройки Telegram",
+    "officialLabel": "Открыть BotFather",
+    "fields": {
+      "token": {
+        "label": "Токен бота",
+        "placeholder": "123456:ABC..."
+      },
+      "proxy": {
+        "label": "Сетевой прокси",
+        "placeholder": "http://127.0.0.1:7890"
+      },
+      "allowFrom": {
+        "label": "Разрешенные пользователи",
+        "placeholder": "* или ID пользователей Telegram"
+      },
+      "groupPolicy": {
+        "label": "Поведение группы",
+        "choices": {
+          "mention": "Только упоминание",
+          "open": "Все сообщения",
+          "allowlist": "Разрешенный список"
+        }
+      },
+      "mode": {
+        "label": "Режим подключения",
+        "choices": {
+          "polling": "Долгое опрос",
+          "webhook": "Webhook"
+        }
+      },
+      "replyToMessage": {
+        "label": "Ответ на сообщение",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "reactEmoji": {
+        "label": "Читать эмодзи"
+      },
+      "connectionPoolSize": {
+        "label": "Размер пула соединений"
+      },
+      "poolTimeout": {
+        "label": "Таймаут пула соединений"
+      },
+      "streaming": {
+        "label": "Стриминг",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "inlineKeyboards": {
+        "label": "Инлайн клавиатуры",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "richMessages": {
+        "label": "Расширенные сообщения",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "streamEditInterval": {
+        "label": "Интервал обновления потока"
+      },
+      "webhookUrl": {
+        "label": "URL вебхука"
+      },
+      "webhookListenHost": {
+        "label": "Хост для прослушивания вебхука"
+      },
+      "webhookListenPort": {
+        "label": "Порт для прослушивания вебхука"
+      },
+      "webhookPath": {
+        "label": "Путь вебхука"
+      },
+      "webhookSecretToken": {
+        "label": "Секретный токен вебхука"
+      },
+      "webhookMaxConnections": {
+        "label": "Максимальное количество соединений вебхука"
+      }
+    }
+  }
+}

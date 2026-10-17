@@ -1,0 +1,165 @@
+{
+  "setup": {
+    "docsLabel": "Открыть настройки электронной почты",
+    "officialLabel": "Открыть руководство по паролям приложений",
+    "presetLabel": "Быстрое заполнение",
+    "sections": {
+      "receiving": "Получение почты",
+      "sending": "Отправка почты"
+    },
+    "presets": {
+      "gmail": "Gmail",
+      "outlook": "Outlook",
+      "icloud": "iCloud"
+    },
+    "fields": {
+      "consentGranted": {
+        "label": "Разрешить наноботу читать и отправлять электронную почту",
+        "choices": {
+          "true": "Предоставлено",
+          "false": "Не предоставлено"
+        }
+      },
+      "imapHost": {
+        "label": "IMAP хост",
+        "placeholder": "imap.gmail.com"
+      },
+      "imapUsername": {
+        "label": "IMAP имя пользователя",
+        "placeholder": "bot@example.com"
+      },
+      "imapPassword": {
+        "label": "IMAP пароль",
+        "placeholder": "Пароль приложения"
+      },
+      "smtpHost": {
+        "label": "SMTP хост",
+        "placeholder": "smtp.gmail.com"
+      },
+      "smtpUsername": {
+        "label": "SMTP имя пользователя",
+        "placeholder": "bot@example.com"
+      },
+      "smtpPassword": {
+        "label": "SMTP пароль",
+        "placeholder": "Пароль приложения"
+      },
+      "imapPort": {
+        "label": "IMAP порт",
+        "placeholder": "993"
+      },
+      "smtpPort": {
+        "label": "SMTP порт",
+        "placeholder": "587"
+      },
+      "fromAddress": {
+        "label": "Адрес отправителя",
+        "placeholder": "bot@example.com"
+      },
+      "pollIntervalSeconds": {
+        "label": "Проверять почту каждые (секунды)",
+        "placeholder": "30"
+      },
+      "allowFrom": {
+        "label": "Разрешенные отправители",
+        "placeholder": "Адреса электронной почты, через запятую"
+      },
+      "verifyDkim": {
+        "label": "Проверить DKIM",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "verifySpf": {
+        "label": "Проверить SPF",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "imapMailbox": {
+        "label": "IMAP почтовый ящик"
+      },
+      "imapUseSsl": {
+        "label": "IMAP SSL",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "smtpUseTls": {
+        "label": "SMTP TLS",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "smtpUseSsl": {
+        "label": "SMTP SSL",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "autoReplyEnabled": {
+        "label": "Автоматические ответы",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "markSeen": {
+        "label": "Отметить как прочитанное",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "postAction": {
+        "label": "После обработки",
+        "choices": {
+          "delete": "Удалить",
+          "move": "Переместить"
+        }
+      },
+      "postActionMoveMailbox": {
+        "label": "Переместить в почтовый ящик"
+      },
+      "postActionExpunge": {
+        "label": "Постоянно применить действие",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "postActionIgnoreSkipped": {
+        "label": "Игнорировать пропущенные сообщения",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "maxBodyChars": {
+        "label": "Максимальная длина тела сообщения"
+      },
+      "subjectPrefix": {
+        "label": "Префикс темы ответа"
+      },
+      "allowedAttachmentTypes": {
+        "label": "Разрешенные типы вложений"
+      },
+      "maxAttachmentSize": {
+        "label": "Максимальный размер вложения"
+      },
+      "maxAttachmentsPerEmail": {
+        "label": "Максимальное количество вложений"
+      },
+      "trustedAuthservIds": {
+        "label": "Доверенные службы аутентификации",
+        "placeholder": "mx.google.com, через запятую",
+        "help": "Точные значения authserv-id, добавленные службой получения почты. Обязательно, если включена проверка SPF или DKIM."
+      }
+    }
+  }
+}

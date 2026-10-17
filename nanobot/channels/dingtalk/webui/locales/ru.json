@@ -1,0 +1,44 @@
+{
+  "setup": {
+    "docsLabel": "Открыть настройки DingTalk",
+    "officialLabel": "Открыть консоль DingTalk",
+    "fields": {
+      "clientId": {
+        "label": "Идентификатор клиента",
+        "placeholder": "Идентификатор клиента DingTalk"
+      },
+      "clientSecret": {
+        "label": "Секрет клиента",
+        "placeholder": "••••••"
+      },
+      "allowFrom": {
+        "label": "Разрешенные пользователи",
+        "placeholder": "Идентификаторы пользователей, через запятую"
+      },
+      "allowRemoteMediaRedirects": {
+        "label": "Разрешить медиа-редиректы",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "remoteMediaRedirectAllowedHosts": {
+        "label": "Хосты для медиа-редиректов"
+      },
+      "groupUserIsolation": {
+        "label": "Отдельные групповые сессии",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "disablePrivateChat": {
+        "label": "Отключить прямые сообщения",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      }
+    }
+  }
+}

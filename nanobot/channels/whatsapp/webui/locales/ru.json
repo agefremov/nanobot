@@ -1,0 +1,36 @@
+{
+  "setup": {
+    "primaryAction": "Подключить WhatsApp",
+    "docsLabel": "Открыть настройки WhatsApp",
+    "officialLabel": "Открыть справку WhatsApp",
+    "fields": {
+      "allowFrom": {
+        "label": "Разрешенные контакты",
+        "placeholder": "Номера телефонов или ID WhatsApp"
+      },
+      "groupPolicy": {
+        "label": "Поведение в группе",
+        "choices": {
+          "mention": "Только упоминания",
+          "open": "Все сообщения",
+          "allowlist": "Разрешенный список"
+        }
+      },
+      "proxy": {
+        "label": "Сетевой прокси",
+        "placeholder": "http://127.0.0.1:7890"
+      }
+    }
+  },
+  "custom": {
+    "qrAlt": "QR-код для связывания WhatsApp",
+    "scanTitle": "Связать WhatsApp",
+    "scanDescription": "В WhatsApp откройте Связанные устройства, выберите Связать устройство, затем отсканируйте этот код.",
+    "waiting": "Ожидание WhatsApp…",
+    "connected": "WhatsApp подключен.",
+    "stopped": "Попытка подключения к WhatsApp остановлена. Начните снова, чтобы получить новый код.",
+    "connecting": "Подключение…",
+    "scanAgain": "Связать другую учетную запись",
+    "connect": "Связать WhatsApp"
+  }
+}

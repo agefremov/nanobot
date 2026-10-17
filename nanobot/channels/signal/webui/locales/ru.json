@@ -1,0 +1,69 @@
+{
+  "setup": {
+    "docsLabel": "Настройка Open Signal",
+    "officialLabel": "Руководство по signal-cli",
+    "fields": {
+      "phoneNumber": {
+        "label": "Номер телефона",
+        "placeholder": "+1234567890"
+      },
+      "daemonHost": {
+        "label": "Хост демона",
+        "placeholder": "localhost"
+      },
+      "daemonPort": {
+        "label": "Порт демона",
+        "placeholder": "8080"
+      },
+      "dm_allowFrom": {
+        "label": "Разрешенные отправители прямых сообщений",
+        "placeholder": "Номера телефонов или UUID"
+      },
+      "group_allowFrom": {
+        "label": "Разрешенные группы",
+        "placeholder": "ID групп"
+      },
+      "groupMessageBufferSize": {
+        "label": "Сообщения контекста группы"
+      },
+      "attachmentsDir": {
+        "label": "Каталог вложений"
+      },
+      "dm_enabled": {
+        "label": "Включить прямые сообщения",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "dm_policy": {
+        "label": "Доступ к прямым сообщениям",
+        "choices": {
+          "allowlist": "Разрешенный список",
+          "open": "Открытый"
+        }
+      },
+      "group_enabled": {
+        "label": "Включить группы",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "group_policy": {
+        "label": "Доступ к группе",
+        "choices": {
+          "allowlist": "Разрешенный список",
+          "open": "Открытый"
+        }
+      },
+      "group_requireMention": {
+        "label": "Требовать упоминание в группах",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      }
+    }
+  }
+}

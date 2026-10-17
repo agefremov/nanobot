@@ -1,0 +1,93 @@
+{
+  "setup": {
+    "docsLabel": "Открыть настройки Slack",
+    "officialLabel": "Открыть приложения Slack",
+    "actions": {
+      "slack-manifest": "Скопировать манифест приложения"
+    },
+    "fields": {
+      "appToken": {
+        "label": "Токен приложения",
+        "placeholder": "xapp-..."
+      },
+      "botToken": {
+        "label": "Токен бота",
+        "placeholder": "xoxb-..."
+      },
+      "groupPolicy": {
+        "label": "Поведение группы",
+        "choices": {
+          "mention": "Только упоминания",
+          "open": "Все сообщения",
+          "allowlist": "Разрешённые"
+        }
+      },
+      "mode": {
+        "label": "Режим подключения",
+        "choices": {
+          "socket": "Режим сокета"
+        }
+      },
+      "webhookPath": {
+        "label": "Путь вебхука"
+      },
+      "replyInThread": {
+        "label": "Ответ в теме",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "reactEmoji": {
+        "label": "Эмодзи реакции"
+      },
+      "doneEmoji": {
+        "label": "Эмодзи завершения"
+      },
+      "includeThreadContext": {
+        "label": "Включить контекст темы",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "threadContextLimit": {
+        "label": "Лимит контекста темы"
+      },
+      "allowFrom": {
+        "label": "Разрешённые пользователи"
+      },
+      "groupAllowFrom": {
+        "label": "Разрешённые каналы"
+      },
+      "groupRequireMention": {
+        "label": "Требовать упоминания в каналах",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "dm_enabled": {
+        "label": "Включить личные сообщения",
+        "choices": {
+          "true": "Включено",
+          "false": "Выключено"
+        }
+      },
+      "dm_policy": {
+        "label": "Доступ к личным сообщениям",
+        "choices": {
+          "allowlist": "Разрешённые",
+          "open": "Открыто"
+        }
+      },
+      "dm_allowFrom": {
+        "label": "Разрешённые пользователи личных сообщений"
+      },
+      "proxy": {
+        "label": "Сетевой прокси",
+        "placeholder": "http://127.0.0.1:7890"
+      }
+    }
+  }
+}
