@@ -1,0 +1,21 @@
+{
+  "displayName": "MAX",
+  "setup": {
+    "docsLabel": "Открыть документацию MAX Bot API",
+    "officialLabel": "Открыть настройки бота MAX",
+    "fields": {
+      "token": {
+        "label": "Токен бота",
+        "placeholder": "Токен из business.max.ru → Чат-боты"
+      },
+      "allowFrom": {
+        "label": "Разрешенные пользователи",
+        "placeholder": "* или ID пользователей MAX"
+      },
+      "welcomeMessage": {
+        "label": "Приветственное сообщение",
+        "placeholder": "Отправляется, когда пользователь начинает чат с ботом"
+      }
+    }
+  }
+}

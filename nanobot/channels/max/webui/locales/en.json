@@ -1,0 +1,21 @@
+{
+  "displayName": "MAX",
+  "setup": {
+    "docsLabel": "Open MAX Bot API docs",
+    "officialLabel": "Open MAX bot settings",
+    "fields": {
+      "token": {
+        "label": "Bot token",
+        "placeholder": "Token from business.max.ru → Chat bots"
+      },
+      "allowFrom": {
+        "label": "Allowed users",
+        "placeholder": "* or MAX user IDs"
+      },
+      "welcomeMessage": {
+        "label": "Welcome message",
+        "placeholder": "Sent when someone starts a chat with the bot"
+      }
+    }
+  }
+}
