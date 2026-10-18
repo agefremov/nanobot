@@ -25,6 +25,8 @@ _MIME_EXTENSION_OVERRIDES = {
     # file extension and accept the canonical container extensions instead.
     "application/javascript": ".js",
     "application/ogg": ".ogg",
+    "application/zip": ".zip",
+    "application/x-zip-compressed": ".zip",
     "audio/ogg": ".ogg",
     "audio/mpga": ".mpga",
     "audio/wav": ".wav",

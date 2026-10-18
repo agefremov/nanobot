@@ -488,8 +488,8 @@ async def test_message_rejected_on_unsupported_file_mime(tmp_path) -> None:
     envelope = {
         "type": "message",
         "chat_id": "abc123",
-        "content": "zip?",
-        "media": [{"data_url": _data_url("application/zip", b"PK")}],
+        "content": "7z?",
+        "media": [{"data_url": _data_url("application/x-7z-compressed", b"7z")}],
     }
 
     with patch(

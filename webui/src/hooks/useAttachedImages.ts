@@ -84,6 +84,8 @@ const DOCUMENT_MIME_BY_EXTENSION: ReadonlyMap<string, string> = new Map([
   [".toml", "application/toml"],
   [".ini", "text/plain"],
   [".cfg", "text/plain"],
+  // ZIP archives (auto-unpacked server-side into a manifest).
+  [".zip", "application/zip"],
   // Source code (uploaded for analysis).
   [".php", "text/x-php"],
   [".py", "text/x-python"],

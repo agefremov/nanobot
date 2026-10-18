@@ -29,6 +29,10 @@ function pdfFile(name = "report.pdf", size = 8) {
   return new File([new Uint8Array(size)], name, { type: "application/pdf" });
 }
 
+function zipFile(name = "data.zip", size = 16) {
+  return new File([new Uint8Array(size)], name, { type: "application/zip" });
+}
+
 function csvFile(name = "report.csv", type = "application/vnd.ms-excel") {
   return new File(["name,value\nnanobot,1"], name, { type });
 }
@@ -150,6 +154,38 @@ describe("ThreadComposer — attachments", () => {
     expect(attachments).toHaveLength(1);
     expect(attachments[0].media.data_url).toContain("data:application/pdf;base64,");
     expect(attachments[0].media.name).toBe("report.pdf");
+    expect(attachments[0].preview.kind).toBe("file");
+  });
+
+  it("attaches a picked ZIP archive and sends it as a document", async () => {
+    const file = zipFile();
+    const onSend = vi.fn();
+
+    render(<ThreadComposer onSend={onSend} />);
+
+    const input = screen
+      .getByLabelText(/message input/i)
+      .closest("form")!
+      .querySelector('input[type="file"]') as HTMLInputElement;
+
+    await act(async () => {
+      fireEvent.change(input, { target: { files: [file] } });
+    });
+
+    await waitFor(() =>
+      expect(screen.getByTestId("composer-chip")).toHaveTextContent("data.zip"),
+    );
+
+    const textarea = screen.getByLabelText(/message input/i);
+    fireEvent.change(textarea, { target: { value: "unpack this" } });
+    fireEvent.keyDown(textarea, { key: "Enter" });
+
+    expect(encodeImage).not.toHaveBeenCalled();
+    const [content, attachments] = onSend.mock.calls[0];
+    expect(content).toBe("unpack this");
+    expect(attachments).toHaveLength(1);
+    expect(attachments[0].media.data_url).toContain("data:application/zip;base64,");
+    expect(attachments[0].media.name).toBe("data.zip");
     expect(attachments[0].preview.kind).toBe("file");
   });
 

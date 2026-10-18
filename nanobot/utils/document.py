@@ -9,6 +9,7 @@ from zipfile import BadZipFile, ZipFile
 
 from loguru import logger
 
+from nanobot.utils.archive import describe_archive
 from nanobot.utils.helpers import detect_image_mime
 
 _MAX_TEXT_LENGTH = 200_000
@@ -686,7 +687,9 @@ def reference_non_image_attachments(
     Image paths are preserved for downstream vision-block construction.
     Non-image paths are appended as ``[Attachment: path]`` references so the
     model can inspect them on demand with ``read_file`` or pass the original
-    path to another tool that needs exact file bytes.
+    path to another tool that needs exact file bytes. ZIP archives get a
+    ``[Archive: path -> dir/]`` manifest instead (contents listed inline),
+    pointing at the auto-extracted directory when one exists.
     """
     image_paths: list[str] = []
     attachment_refs: list[str] = []
@@ -695,7 +698,9 @@ def reference_non_image_attachments(
         if is_image_file(path):
             image_paths.append(path)
         else:
-            attachment_refs.append(f"[Attachment: {path}]")
+            attachment_refs.append(
+                describe_archive(path) or f"[Attachment: {path}]"
+            )
     if attachment_refs:
         suffix = "\n".join(attachment_refs)
         content = f"{content}\n\n{suffix}" if content else suffix

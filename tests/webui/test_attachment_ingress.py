@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import base64
+import io
+import zipfile
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
 
+from nanobot.utils.archive import unpacked_dir_for
 from nanobot.webui.attachment_ingress import (
     extract_data_url_mime,
     store_inbound_attachments,
@@ -140,3 +143,59 @@ def test_code_files_pass_upload_policy_and_keep_name(
     saved = Path(paths[0])
     assert saved.name.endswith(f"_{name}")
     assert saved.read_bytes() == b"payload"
+
+
+def _zip_payload(entries: dict[str, bytes]) -> bytes:
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as zf:
+        for name, payload in entries.items():
+            zf.writestr(name, payload)
+    return buf.getvalue()
+
+
+def test_zip_attachment_is_stored_and_unpacked(tmp_path: Path) -> None:
+    paths, rejection = store_inbound_attachments(
+        [
+            {
+                "data_url": _data_url(
+                    "application/zip",
+                    _zip_payload({"a.txt": b"aaa", "sub/b.csv": b"x,y\n1,2"}),
+                ),
+                "name": "data.zip",
+            }
+        ],
+        media_dir=tmp_path,
+        logger=MagicMock(),
+    )
+
+    assert rejection is None
+    saved = Path(paths[0])
+    assert saved.name.endswith("_data.zip")
+    unpacked = unpacked_dir_for(saved)
+    assert (unpacked / "a.txt").read_bytes() == b"aaa"
+    assert (unpacked / "sub" / "b.csv").is_file()
+
+
+def test_batch_abort_removes_unpacked_archive_dir(tmp_path: Path) -> None:
+    zip_payload = _zip_payload({"a.txt": b"aaa"})
+
+    paths, rejection = store_inbound_attachments(
+        [
+            {
+                "data_url": _data_url("application/zip", zip_payload),
+                "name": "data.zip",
+            },
+            {"data_url": _data_url("text/plain", b"1234"), "name": "two.txt"},
+        ],
+        media_dir=tmp_path,
+        logger=MagicMock(),
+        limits=AttachmentIngressLimits(
+            max_file_bytes=1024, max_total_bytes=len(zip_payload) + 2
+        ),
+    )
+
+    assert paths == []
+    assert rejection == "total_size"
+    # The whole batch rolls back: archive, its unpacked dir, and the file
+    # that tripped the policy.
+    assert list(tmp_path.iterdir()) == []

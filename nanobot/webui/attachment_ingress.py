@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import re
+import shutil
 from pathlib import Path
 from typing import Any, Literal, cast
 
+from nanobot.utils.archive import extract_zip_archive, is_archive_file
 from nanobot.utils.media_decode import FileSizeExceeded, save_base64_data_url
 from nanobot.webui.ingress_policy import (
     DEFAULT_WEBUI_INGRESS_POLICY,
@@ -61,9 +63,11 @@ _DOCUMENT_MIME_ALLOWED: frozenset[str] = frozenset({
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "application/x-yaml",
+    "application/x-zip-compressed",
     "application/xhtml+xml",
     "application/xml",
     "application/yaml",
+    "application/zip",
     "text/csv",
     "text/html",
     "text/markdown",
@@ -126,6 +130,7 @@ def store_inbound_attachments(
         return [], "too_many_attachments"
 
     paths: list[str] = []
+    unpack_dirs: list[Path] = []
     total_attachment_bytes = 0
 
     def abort(reason: AttachmentRejection) -> AttachmentIngressResult:
@@ -134,6 +139,8 @@ def store_inbound_attachments(
                 Path(path).unlink(missing_ok=True)
             except OSError as exc:
                 logger.warning("failed to unlink partial media {}: {}", path, exc)
+        for unpack_dir in unpack_dirs:
+            shutil.rmtree(unpack_dir, ignore_errors=True)
         return [], reason
 
     for item in media:
@@ -174,6 +181,16 @@ def store_inbound_attachments(
         if saved is None:
             return abort("decode")
         paths.append(saved)
+        if is_archive_file(saved):
+            # Unpack ZIP archives so the model can read members on demand.
+            # Bounded and hostile-input-safe: extraction failures never fail
+            # the upload — the archive degrades to a plain attachment.
+            try:
+                extraction = extract_zip_archive(saved)
+                if extraction.extracted_dir is not None:
+                    unpack_dirs.append(extraction.extracted_dir)
+            except Exception as exc:
+                logger.warning("archive unpack failed for {}: {}", saved, exc)
         if not is_video:
             try:
                 total_attachment_bytes += Path(saved).stat().st_size
