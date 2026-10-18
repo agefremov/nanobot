@@ -50,10 +50,10 @@ function resolveReady(file: File): EncodeResponse {
 }
 
 function ingressLimits({
-  maxFrameBytes = 36 * 1024 * 1024,
+  maxFrameBytes = 68 * 1024 * 1024,
   maxTextBytes = 64 * 1024,
-  maxFileBytes = 6 * 1024 * 1024,
-  maxTotalBytes = 24 * 1024 * 1024,
+  maxFileBytes = 24 * 1024 * 1024,
+  maxTotalBytes = 48 * 1024 * 1024,
 }: {
   maxFrameBytes?: number;
   maxTextBytes?: number;
@@ -241,7 +241,7 @@ describe("ThreadComposer — attachments", () => {
   });
 
   it("rejects an oversized document before adding a chip", async () => {
-    const file = pdfFile("oversized.pdf", 6 * 1024 * 1024 + 1);
+    const file = pdfFile("oversized.pdf", 24 * 1024 * 1024 + 1);
 
     render(<ThreadComposer onSend={vi.fn()} />);
 

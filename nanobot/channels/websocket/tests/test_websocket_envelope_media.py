@@ -77,18 +77,26 @@ def isolate_websocket_turn_state() -> None:
 
 
 # -- max_message_bytes bump ----------------------------------------------------
+# Two ≤ 24 MiB document attachments base64-encode to ≈ 64 MiB of data-URL
+# payload (4 * ceil(24 MiB / 3)), before text and envelope framing. The default
+# frame cap must carry every policy-valid full batch (24 MiB per file,
+# 48 MiB total) so heavy uploads never fail at the transport layer.
 
 
 def test_max_message_bytes_default_supports_multi_image_frame() -> None:
-    """Default 36 MB must comfortably hold 4 × 6 MB base64-encoded images."""
+    """Default 68 MiB must hold a full 48 MiB attachment batch base64-encoded."""
     from nanobot.channels.websocket.runtime import WebSocketConfig
+    from nanobot.webui.ingress_policy import DEFAULT_WEBUI_INGRESS_POLICY
 
     default = WebSocketConfig().max_message_bytes
-    # 4 images × 6 MB × 1.37 base64 overhead ≈ 33 MB
-    assert default >= 33 * 1024 * 1024
-    # Upper bound 40 MB matches plan
+    # 48 MiB raw → 4 * ceil(48 MiB / 3) = 64 MiB of base64 + framing reserves
+    assert default >= 64 * 1024 * 1024
+    # The policy-derived floor fits inside the default transport frame.
+    assert DEFAULT_WEBUI_INGRESS_POLICY.minimum_full_policy_frame_bytes() < default
+    # Upper bound 72 MiB: even a validated frame must not become an
+    # unbounded memory spike.
     with pytest.raises(Exception):
-        WebSocketConfig(max_message_bytes=41_943_040 + 1)
+        WebSocketConfig(max_message_bytes=75_497_472 + 1)
 
 
 # -- _dispatch_envelope message branch + media --------------------------------
@@ -402,7 +410,7 @@ async def test_message_rejected_when_too_many_total_attachments(tmp_path) -> Non
 async def test_message_rejected_on_oversize_payload(tmp_path) -> None:
     channel = _make_channel()
     mock_conn = AsyncMock()
-    oversized = b"x" * (9 * 1024 * 1024)  # > 8 MB WS limit
+    oversized = b"x" * (25 * 1024 * 1024)  # > 24 MiB per-file policy limit
     envelope = {
         "type": "message",
         "chat_id": "abc123",

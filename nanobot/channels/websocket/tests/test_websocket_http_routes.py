@@ -255,8 +255,8 @@ async def test_bootstrap_returns_token_for_localhost(
             "message": {"max_text_bytes": 65_536},
             "attachments": {
                 "max_count": 4,
-                "max_file_bytes": 6_291_456,
-                "max_total_bytes": 25_165_824,
+                "max_file_bytes": 25_165_824,
+                "max_total_bytes": 50_331_648,
             },
         }
         assert "max_message_bytes" not in body
