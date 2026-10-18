@@ -33,6 +33,10 @@ function csvFile(name = "report.csv", type = "application/vnd.ms-excel") {
   return new File(["name,value\nnanobot,1"], name, { type });
 }
 
+function codeFile(name: string, type = "") {
+  return new File(["<?php echo 1;"], name, { type });
+}
+
 function resolveReady(file: File): EncodeResponse {
   return {
     id: "stub",
@@ -179,6 +183,41 @@ describe("ThreadComposer — attachments", () => {
       expect(encodeImage).not.toHaveBeenCalled();
     },
   );
+
+  it.each([
+    ["index.php", "text/x-php"],
+    ["utils.py", "text/x-python"],
+    ["styles.css", "text/css"],
+    ["app.js", "text/javascript"],
+    ["Component.tsx", "text/typescript"],
+  ])("attaches source file %s with MIME %s on send", async (name, expectedMime) => {
+    const file = codeFile(name, "application/octet-stream");
+    const onSend = vi.fn();
+
+    render(<ThreadComposer onSend={onSend} />);
+
+    const input = screen
+      .getByLabelText(/message input/i)
+      .closest("form")!
+      .querySelector('input[type="file"]') as HTMLInputElement;
+
+    await act(async () => {
+      fireEvent.change(input, { target: { files: [file] } });
+    });
+
+    await waitFor(() =>
+      expect(screen.getByTestId("composer-chip")).toHaveTextContent(name),
+    );
+
+    const textarea = screen.getByLabelText(/message input/i);
+    fireEvent.change(textarea, { target: { value: "analyze" } });
+    fireEvent.keyDown(textarea, { key: "Enter" });
+
+    const [, attachments] = onSend.mock.calls[0];
+    expect(attachments).toHaveLength(1);
+    expect(attachments[0].media.data_url).toContain(`data:${expectedMime};base64,`);
+    expect(attachments[0].media.name).toBe(name);
+  });
 
   it("rejects empty attachments before sending them to the gateway", async () => {
     const file = new File([], "empty.csv", { type: "application/vnd.ms-excel" });

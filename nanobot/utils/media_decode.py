@@ -23,6 +23,7 @@ _MIME_EXTENSION_OVERRIDES = {
     # Python's ``mimetypes`` maps browser-recorded audio/webm to ``.weba`` and
     # audio/ogg to ``.oga`` on macOS. Some transcription APIs validate by the
     # file extension and accept the canonical container extensions instead.
+    "application/javascript": ".js",
     "application/ogg": ".ogg",
     "audio/ogg": ".ogg",
     "audio/mpga": ".mpga",
@@ -35,17 +36,24 @@ _MIME_EXTENSION_OVERRIDES = {
     "application/json": ".json",
     "application/pdf": ".pdf",
     "application/toml": ".toml",
+    "application/typescript": ".ts",
     "application/vnd.openxmlformats-officedocument.presentationml.presentation": ".pptx",
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ".xlsx",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ".docx",
+    "application/x-httpd-php": ".php",
     "application/x-yaml": ".yaml",
     "application/xhtml+xml": ".html",
     "application/xml": ".xml",
     "application/yaml": ".yaml",
+    "text/css": ".css",
     "text/csv": ".csv",
     "text/html": ".html",
+    "text/javascript": ".js",
     "text/markdown": ".md",
     "text/plain": ".txt",
+    "text/typescript": ".ts",
+    "text/x-php": ".php",
+    "text/x-python": ".py",
     "text/xml": ".xml",
     "text/yaml": ".yaml",
 }
@@ -87,6 +95,13 @@ def save_base64_data_url(
     ext = _MIME_EXTENSION_OVERRIDES.get(mime_type) or mimetypes.guess_extension(mime_type) or ".bin"
     base = safe_filename(filename or "")
     stem = Path(base).stem[:80] if base else ""
+    # Prefer the original filename's extension when it is a simple safe suffix
+    # so source files keep their real type (``Component.tsx`` must not collapse
+    # to a MIME-derived ``.ts``). MIME stays the whitelist gate; the suffix is
+    # only a label for the consumer.
+    orig_suffix = Path(base).suffix
+    if re.fullmatch(r"\.[A-Za-z0-9]{1,10}", orig_suffix or ""):
+        ext = orig_suffix
     saved_name = f"{uuid.uuid4().hex[:12]}_{stem}{ext}" if stem else f"{uuid.uuid4().hex[:12]}{ext}"
     dest = media_dir / safe_filename(saved_name)
     dest.write_bytes(raw)

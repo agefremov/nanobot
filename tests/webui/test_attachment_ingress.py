@@ -115,3 +115,28 @@ def test_total_attachment_policy_rolls_back_the_batch(tmp_path: Path) -> None:
     assert paths == []
     assert rejection == "total_size"
     assert list(tmp_path.iterdir()) == []
+
+
+@pytest.mark.parametrize(
+    ("mime", "name"),
+    [
+        ("text/x-php", "index.php"),
+        ("text/x-python", "utils.py"),
+        ("text/css", "styles.css"),
+        ("text/javascript", "app.js"),
+        ("text/typescript", "Component.tsx"),
+    ],
+)
+def test_code_files_pass_upload_policy_and_keep_name(
+    tmp_path: Path, mime: str, name: str
+) -> None:
+    paths, rejection = store_inbound_attachments(
+        [{"data_url": _data_url(mime, b"payload"), "name": name}],
+        media_dir=tmp_path,
+        logger=MagicMock(),
+    )
+
+    assert rejection is None
+    saved = Path(paths[0])
+    assert saved.name.endswith(f"_{name}")
+    assert saved.read_bytes() == b"payload"

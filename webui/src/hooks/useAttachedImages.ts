@@ -84,6 +84,16 @@ const DOCUMENT_MIME_BY_EXTENSION: ReadonlyMap<string, string> = new Map([
   [".toml", "application/toml"],
   [".ini", "text/plain"],
   [".cfg", "text/plain"],
+  // Source code (uploaded for analysis).
+  [".php", "text/x-php"],
+  [".py", "text/x-python"],
+  [".css", "text/css"],
+  [".js", "text/javascript"],
+  [".mjs", "text/javascript"],
+  [".cjs", "text/javascript"],
+  [".jsx", "text/javascript"],
+  [".ts", "text/typescript"],
+  [".tsx", "text/typescript"],
 ]);
 
 const ACCEPTED_DOCUMENT_MIMES: ReadonlySet<string> = new Set(DOCUMENT_MIME_BY_EXTENSION.values());

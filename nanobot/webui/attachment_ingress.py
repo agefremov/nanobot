@@ -40,6 +40,19 @@ _VIDEO_MIME_ALLOWED: frozenset[str] = frozenset({
     "video/quicktime",
 })
 
+# Source/code files users attach for analysis. Counted and stored exactly
+# like documents (original name preserved, same per-message quotas).
+_CODE_MIME_ALLOWED: frozenset[str] = frozenset({
+    "application/javascript",
+    "application/typescript",
+    "application/x-httpd-php",
+    "text/css",
+    "text/javascript",
+    "text/typescript",
+    "text/x-php",
+    "text/x-python",
+})
+
 _DOCUMENT_MIME_ALLOWED: frozenset[str] = frozenset({
     "application/json",
     "application/pdf",
@@ -57,7 +70,7 @@ _DOCUMENT_MIME_ALLOWED: frozenset[str] = frozenset({
     "text/plain",
     "text/xml",
     "text/yaml",
-})
+}) | _CODE_MIME_ALLOWED
 
 _UPLOAD_MIME_ALLOWED: frozenset[str] = (
     _IMAGE_MIME_ALLOWED | _VIDEO_MIME_ALLOWED | _DOCUMENT_MIME_ALLOWED

@@ -123,3 +123,25 @@ def test_legacy_symbols_reexported_from_api_server() -> None:
     assert server._save_base64_data_url is save_base64_data_url
     assert server._FileSizeExceeded is FileSizeExceeded
     assert server.MAX_FILE_SIZE == MAX_FILE_SIZE
+
+
+def test_original_extension_wins_over_mime_derived_extension(tmp_path) -> None:
+    """A .tsx file must not collapse to the MIME-derived .ts suffix."""
+    result = save_base64_data_url(
+        _data_url(b"const x = 1;", mime="text/typescript"),
+        tmp_path,
+        filename="Component.tsx",
+    )
+    assert result is not None
+    assert result.endswith("_Component.tsx")
+
+
+def test_original_extension_must_be_simple_and_safe(tmp_path) -> None:
+    """Weird suffixes fall back to the MIME-derived extension."""
+    result = save_base64_data_url(
+        _data_url(b"plain", mime="text/plain"),
+        tmp_path,
+        filename="notes.weird-suffix",
+    )
+    assert result is not None
+    assert result.endswith("_notes.txt")
