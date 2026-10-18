@@ -28,6 +28,7 @@ def test_webui_chat_id_validation_is_protocol_scoped() -> None:
 def test_channel_session_name_detects_channel_sessions() -> None:
     assert channel_session_name("telegram:1269920255") == "telegram"
     assert channel_session_name("max:451041899") == "max"
+    assert channel_session_name("email:a.g.efremov@yandex.ru") == "email"
     assert channel_session_name("telegram:1:topic:5") == "telegram"
     assert channel_session_name("slack:C123:42") == "slack"
 
