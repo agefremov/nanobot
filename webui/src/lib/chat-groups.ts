@@ -8,9 +8,10 @@ export interface SessionGroup {
   id: string;
   label: string;
   sessions: ChatSummary[];
-  kind?: "project";
+  kind?: "project" | "channel";
   projectPath?: string;
   projectKey?: string;
+  channel?: string;
   updatedAt?: string | null;
 }
 
@@ -22,6 +23,7 @@ export interface ChatGroupLabels {
   earlier: string;
   archived: string;
   projects: string;
+  channels: string;
   fallbackTitle: string;
 }
 
@@ -37,6 +39,59 @@ export interface ChatGroupingOptions {
 }
 
 export function groupSessions(
+  sessions: ChatSummary[],
+  labels: ChatGroupLabels,
+  options: ChatGroupingOptions,
+): SessionGroup[] {
+  const channelSessions = sessions.filter((session) => session.readonly === true);
+  const chatSessions = sessions.filter((session) => session.readonly !== true);
+  const groups = groupChatSessions(chatSessions, labels, options);
+  const channelGroups = groupChannelSessions(channelSessions, options);
+  if (channelGroups.length === 0) return groups;
+  const archivedIndex = groups.findIndex((group) => group.id === "archived");
+  if (archivedIndex === -1) return [...groups, ...channelGroups];
+  return [
+    ...groups.slice(0, archivedIndex),
+    ...channelGroups,
+    ...groups.slice(archivedIndex),
+  ];
+}
+
+function groupChannelSessions(
+  sessions: ChatSummary[],
+  options: ChatGroupingOptions,
+): SessionGroup[] {
+  const byChannel = new Map<string, ChatSummary[]>();
+  for (const session of sessions) {
+    const channel = session.channel?.trim() || "channel";
+    const bucket = byChannel.get(channel);
+    if (bucket) bucket.push(session);
+    else byChannel.set(channel, [session]);
+  }
+  return [...byChannel.entries()]
+    .map(([channel, items]) => ({
+      id: `channel:${channel}`,
+      label: channel,
+      kind: "channel" as const,
+      channel,
+      updatedAt: items.reduce<string | null>(
+        (best, session) => {
+          const candidate = session.updatedAt ?? session.createdAt ?? null;
+          return isNewerDate(candidate, best) ? candidate : best;
+        },
+        null,
+      ),
+      sessions: sortSessions(
+        items,
+        options.sort,
+        options.titleOverrides,
+        options.sessionOrder,
+      ),
+    }))
+    .sort((a, b) => dateToTime(b.updatedAt) - dateToTime(a.updatedAt));
+}
+
+function groupChatSessions(
   sessions: ChatSummary[],
   labels: ChatGroupLabels,
   options: ChatGroupingOptions,

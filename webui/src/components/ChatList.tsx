@@ -354,6 +354,7 @@ export const ChatList = memo(function ChatList({
     }
     for (const session of sessions) {
       if (items.has(session.key)) continue;
+      if (session.readonly) continue;
       items.set(session.key, {
         key: session.key,
         label: displayTitle(session, titleOverrides, t("chat.newChat")),
@@ -379,6 +380,7 @@ export const ChatList = memo(function ChatList({
     earlier: t("chat.groups.earlier"),
     archived: t("chat.groups.archived"),
     projects: t("chat.groups.projects"),
+    channels: t("chat.groups.channels", { defaultValue: "Channels" }),
     fallbackTitle: t("chat.newChat"),
   }), [t]);
   const groups = useMemo(
@@ -569,6 +571,7 @@ export const ChatList = memo(function ChatList({
   const recovery = new Set(recoveryChatIds);
   const compact = density === "compact";
   const firstProjectGroupIndex = limitedGroups.findIndex((group) => group.kind === "project");
+  const firstChannelGroupIndex = limitedGroups.findIndex((group) => group.kind === "channel");
   const selectableDeleteKeys = Array.from(new Set(limitedGroups.flatMap((group) => (
     group.sessions.flatMap((session) => {
       const paneGroup = paneGroups[session.key];
@@ -723,6 +726,11 @@ export const ChatList = memo(function ChatList({
               {index === firstProjectGroupIndex ? (
                 <div className="px-2 pb-2 pt-2 text-[11px] font-medium leading-4 text-sidebar-muted-foreground">
                   {labels.projects}
+                </div>
+              ) : null}
+              {index === firstChannelGroupIndex ? (
+                <div className="px-2 pb-2 pt-2 text-[11px] font-medium leading-4 text-sidebar-muted-foreground">
+                  {labels.channels}
                 </div>
               ) : null}
               <div>
@@ -1098,21 +1106,25 @@ export const ChatList = memo(function ChatList({
                                   onMove={(targetKey) => onAttachPane(s.key, targetKey)}
                                 />
                               ) : null}
-                              <DropdownMenuItem
-                                onSelect={() => beginDeleteSelection(tabDeleteKeys)}
-                              >
-                                <ListChecks className="h-4 w-4 shrink-0" />
-                                {t("chat.select", { defaultValue: "Select" })}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                tone="destructive"
-                                onSelect={() => {
-                                  window.setTimeout(() => requestDeleteKeys(tabDeleteKeys), 0);
-                                }}
-                              >
-                                <Trash2 className="h-4 w-4 shrink-0" />
-                                {t("chat.delete")}
-                              </DropdownMenuItem>
+                              {!s.readonly ? (
+                                <>
+                                  <DropdownMenuItem
+                                    onSelect={() => beginDeleteSelection(tabDeleteKeys)}
+                                  >
+                                    <ListChecks className="h-4 w-4 shrink-0" />
+                                    {t("chat.select", { defaultValue: "Select" })}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    tone="destructive"
+                                    onSelect={() => {
+                                      window.setTimeout(() => requestDeleteKeys(tabDeleteKeys), 0);
+                                    }}
+                                  >
+                                    <Trash2 className="h-4 w-4 shrink-0" />
+                                    {t("chat.delete")}
+                                  </DropdownMenuItem>
+                                </>
+                              ) : null}
                             </DropdownMenuContent>
                           </DropdownMenu>
                           ) : null}

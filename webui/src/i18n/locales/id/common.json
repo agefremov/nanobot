@@ -1176,6 +1176,7 @@
   "chat": {
     "fallbackTitle": "Topik {{id}}",
     "forkTitle": "Cabang: {{title}}",
+    "continueTitle": "Lanjutkan: {{title}}",
     "loading": "Memuat…",
     "noSessions": "Belum ada sesi.",
     "showMore": "Tampilkan {{count}} lagi",
@@ -1213,6 +1214,7 @@
       "pinned": "Disematkan",
       "all": "Topik",
       "projects": "Proyek",
+      "channels": "Saluran",
       "today": "Hari ini",
       "yesterday": "Kemarin",
       "earlier": "Sebelumnya",
@@ -1358,6 +1360,7 @@
     "composer": {
       "placeholderThread": "Ketik pesan Anda…",
       "placeholderHero": "Apa yang sedang Anda pikirkan?",
+      "placeholderReadonly": "Lanjutkan topik ini di WebUI…",
       "placeholderOpening": "Membuka topik baru…",
       "placeholderStreaming": "Model sedang merespons…",
       "inputAria": "Input pesan",

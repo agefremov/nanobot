@@ -1176,6 +1176,7 @@
   "chat": {
     "fallbackTitle": "Chủ đề {{id}}",
     "forkTitle": "Nhánh: {{title}}",
+    "continueTitle": "Tiếp tục: {{title}}",
     "loading": "Đang tải…",
     "noSessions": "Chưa có phiên nào.",
     "showMore": "Hiển thị thêm {{count}}",
@@ -1213,6 +1214,7 @@
       "pinned": "Đã ghim",
       "all": "Chủ đề",
       "projects": "Dự án",
+      "channels": "Kênh",
       "today": "Hôm nay",
       "yesterday": "Hôm qua",
       "earlier": "Trước đó",
@@ -1358,6 +1360,7 @@
     "composer": {
       "placeholderThread": "Nhập tin nhắn…",
       "placeholderHero": "Bạn đang nghĩ gì?",
+      "placeholderReadonly": "Tiếp tục chủ đề này trong WebUI…",
       "placeholderOpening": "Đang mở chủ đề mới…",
       "placeholderStreaming": "Mô hình đang trả lời…",
       "inputAria": "Ô nhập tin nhắn",

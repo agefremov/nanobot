@@ -1177,6 +1177,7 @@
   "chat": {
     "fallbackTitle": "Tema {{id}}",
     "forkTitle": "Bifurcación: {{title}}",
+    "continueTitle": "Continuar: {{title}}",
     "loading": "Cargando…",
     "noSessions": "Todavía no hay sesiones.",
     "showMore": "Mostrar {{count}} más",
@@ -1214,6 +1215,7 @@
       "pinned": "Fijados",
       "all": "Temas",
       "projects": "Proyectos",
+      "channels": "Canales",
       "today": "Hoy",
       "yesterday": "Ayer",
       "earlier": "Anteriores",
@@ -1359,6 +1361,7 @@
     "composer": {
       "placeholderThread": "Escribe tu mensaje…",
       "placeholderHero": "¿Qué tienes en mente?",
+      "placeholderReadonly": "Continuar este tema en la WebUI…",
       "placeholderOpening": "Abriendo un nuevo tema…",
       "placeholderStreaming": "El modelo está respondiendo…",
       "inputAria": "Entrada de mensaje",

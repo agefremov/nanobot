@@ -199,6 +199,8 @@ export function useSessions(): {
     modelPreset?: string | null,
   ) => Promise<string>;
   forkChat: (sourceChatId: string, beforeUserIndex: number, title?: string) => Promise<string>;
+  /** Fork a read-only channel session into a new WebUI chat and return its id. */
+  continueFromSession: (sourceSessionKey: string, title?: string) => Promise<string>;
   deleteChat: (
     key: string,
     options?: { deleteAutomations?: boolean },
@@ -334,6 +336,33 @@ export function useSessions(): {
     return chatId;
   }, [client]);
 
+  const continueFromSession = useCallback(async (
+    sourceSessionKey: string,
+    title?: string,
+  ): Promise<string> => {
+    const chatId = await client.forkChatFromSession(
+      sourceSessionKey,
+      title,
+      CHAT_CREATE_TIMEOUT_MS,
+    );
+    const key = `websocket:${chatId}`;
+    optimisticKeysRef.current.add(key);
+    setSessions((prev) => [
+      {
+        key,
+        channel: "websocket",
+        chatId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        title: title ?? "",
+        preview: "",
+        workspaceScope: null,
+      },
+      ...prev.filter((s) => s.key !== key),
+    ]);
+    return chatId;
+  }, [client]);
+
   const deleteChat = useCallback(
     async (key: string, options?: { deleteAutomations?: boolean }) => {
       const optimistic = optimisticKeysRef.current.has(key);
@@ -361,6 +390,7 @@ export function useSessions(): {
     refresh,
     createChat,
     forkChat,
+    continueFromSession,
     deleteChat,
     getSessionAutomations,
   };

@@ -1376,6 +1376,7 @@
   "chat": {
     "fallbackTitle": "Тема {{id}}",
     "forkTitle": "Ветка: {{title}}",
+    "continueTitle": "Продолжение: {{title}}",
     "loading": "Загрузка…",
     "noSessions": "Пока нет сессий.",
     "showMore": "Показать еще {{count}}",
@@ -1413,6 +1414,7 @@
       "pinned": "Закрепленные",
       "all": "Темы",
       "projects": "Проекты",
+      "channels": "Каналы",
       "today": "Сегодня",
       "yesterday": "Вчера",
       "earlier": "Ранее",
@@ -1558,6 +1560,7 @@
     "composer": {
       "placeholderThread": "Введите ваше сообщение…",
       "placeholderHero": "Спросите что угодно...",
+      "placeholderReadonly": "Продолжить тему в WebUI…",
       "placeholderOpening": "Открытие новой темы…",
       "placeholderStreaming": "Модель отвечает…",
       "inputAria": "Поле ввода сообщения",

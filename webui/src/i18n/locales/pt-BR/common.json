@@ -1190,6 +1190,7 @@
   "chat": {
     "fallbackTitle": "Tópico {{id}}",
     "forkTitle": "Bifurcação: {{title}}",
+    "continueTitle": "Continuar: {{title}}",
     "loading": "Carregando…",
     "noSessions": "Nenhuma sessão ainda.",
     "showMore": "Mostrar mais {{count}}",
@@ -1227,6 +1228,7 @@
       "pinned": "Fixadas",
       "all": "Tópicos",
       "projects": "Projetos",
+      "channels": "Canais",
       "today": "Hoje",
       "yesterday": "Ontem",
       "earlier": "Anteriores",
@@ -1372,6 +1374,7 @@
     "composer": {
       "placeholderThread": "Digite sua mensagem…",
       "placeholderHero": "Pergunte qualquer coisa...",
+      "placeholderReadonly": "Continuar este tópico na WebUI…",
       "placeholderOpening": "Abrindo um novo tópico…",
       "placeholderStreaming": "O modelo está respondendo…",
       "inputAria": "Campo de mensagem",

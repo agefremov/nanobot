@@ -105,7 +105,7 @@ from nanobot.webui.session_automations import (
     session_automations_payload,
 )
 from nanobot.webui.session_context import session_context_payload
-from nanobot.webui.session_identity import is_webui_session_key
+from nanobot.webui.session_identity import channel_session_name, is_webui_session_key
 from nanobot.webui.session_list_index import (
     WEBUI_SESSION_INDEX_INTERNAL_FIELDS,
     indexed_workspace_scope,
@@ -132,6 +132,7 @@ from nanobot.webui.skills_marketplace import (
 from nanobot.webui.thread_disk import delete_webui_thread
 from nanobot.webui.transcript import (
     TranscriptReplayStats,
+    build_session_messages_thread_response,
     build_webui_thread_response,
     build_webui_trace_detail_response,
     webui_transcript_revision,
@@ -852,7 +853,11 @@ class GatewayHTTPHandler:
         default_scope: WorkspaceScope | None = None
         for s in sessions:
             key = s.get("key")
-            if not (isinstance(key, str) and is_webui_session_key(key)):
+            channel = channel_session_name(key) if isinstance(key, str) else None
+            if not (
+                isinstance(key, str)
+                and (is_webui_session_key(key) or channel is not None)
+            ):
                 continue
             row = {
                 k: v
@@ -863,10 +868,16 @@ class GatewayHTTPHandler:
             # older clients and compact list responses stay unchanged.
             if row.get("recovery_state") is None:
                 row.pop("recovery_state", None)
-            chat_id = key.split(":", 1)[1]
-            started_at = websocket_turn_wall_started_at(chat_id)
-            if started_at is not None:
-                row["run_started_at"] = started_at
+            if channel is not None:
+                # Foreign channel topic (telegram/max/...): read-only row,
+                # grouped by ``channel`` in the WebUI sidebar.
+                row["channel"] = channel
+                row["readonly"] = True
+            else:
+                chat_id = key.split(":", 1)[1]
+                started_at = websocket_turn_wall_started_at(chat_id)
+                if started_at is not None:
+                    row["run_started_at"] = started_at
             if default_scope is None:
                 default_scope = self.workspaces.default_scope()
             scope_present, raw_scope = indexed_workspace_scope(s)
@@ -969,11 +980,19 @@ class GatewayHTTPHandler:
         decoded_key = _decode_api_key(key)
         if decoded_key is None:
             return _http_error(400, "invalid session key")
-        if not _is_websocket_channel_session_key(decoded_key):
+        channel = channel_session_name(decoded_key)
+        if not _is_websocket_channel_session_key(decoded_key) and channel is None:
             return _http_error(404, "session not found")
         if diagnostics is not None:
             diagnostics.session_hash = hashlib.sha256(decoded_key.encode("utf-8")).hexdigest()[:12]
         scope = self.workspaces.scope_for_session_key(decoded_key)
+        if channel is not None:
+            return self._handle_channel_session_thread(
+                request,
+                decoded_key,
+                scope=scope,
+                diagnostics=diagnostics,
+            )
 
         def load_session_messages() -> list[dict[str, Any]] | None:
             if self.session_manager is None:
@@ -1091,6 +1110,49 @@ class GatewayHTTPHandler:
             metrics=diagnostics.response if diagnostics is not None else None,
         )
 
+    def _handle_channel_session_thread(
+        self,
+        request: WsRequest,
+        decoded_key: str,
+        *,
+        scope: Any,
+        diagnostics: _WebUIThreadDiagnostics | None = None,
+    ) -> Response:
+        """Read-only thread replay for a foreign channel session (telegram/max/...)."""
+        if self.session_manager is None:
+            return _http_error(503, "session manager unavailable")
+        session_data = self.session_manager.read_session_file(decoded_key)
+        raw_messages = session_data.get("messages") if isinstance(session_data, dict) else None
+        if not isinstance(raw_messages, list):
+            return _http_error(404, "webui thread not found")
+        messages = [
+            cast(dict[str, Any], raw)
+            for raw in cast(list[Any], raw_messages)
+            if isinstance(raw, dict)
+        ]
+        build_started = time.perf_counter()
+        data = build_session_messages_thread_response(
+            decoded_key,
+            messages,
+            augment_user_media=self.media.augment_transcript_media,
+            augment_assistant_media=self.media.augment_transcript_media,
+            augment_assistant_text=lambda text: self.media.rewrite_local_markdown_images(
+                text,
+                workspace_path=scope.project_path,
+            ),
+        )
+        if diagnostics is not None:
+            diagnostics.build_ms = (time.perf_counter() - build_started) * 1000
+        if data is None:
+            return _http_error(404, "webui thread not found")
+        data["workspace_scope"] = scope.payload()
+        return _http_json_response(
+            data,
+            accept_encoding=_combined_list_header(request.headers, "Accept-Encoding"),
+            extra_headers=_NO_STORE_HEADERS,
+            metrics=diagnostics.response if diagnostics is not None else None,
+        )
+
     def _handle_webui_trace_detail_get(self, request: WsRequest, key: str) -> Response:
         if not self.check_api_token(request):
             return _http_error(401, "Unauthorized")
@@ -1117,7 +1179,7 @@ class GatewayHTTPHandler:
         decoded_key = _decode_api_key(key)
         if decoded_key is None:
             return _http_error(400, "invalid session key")
-        if not _is_websocket_channel_session_key(decoded_key):
+        if not _is_websocket_channel_session_key(decoded_key) and channel_session_name(decoded_key) is None:
             return _http_error(404, "session not found")
         query = _parse_query(request.path)
         path = _query_first(query, "path")

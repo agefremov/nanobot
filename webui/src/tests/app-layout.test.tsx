@@ -380,7 +380,7 @@ describe("App layout", () => {
     expect(screen.getByRole("combobox", { name: "Change language" })).toHaveFocus();
     await user.keyboard("{Enter}");
     await screen.findByRole("listbox");
-    await user.keyboard("{ArrowDown}{Enter}");
+    await user.click(screen.getByRole("option", { name: /简体中文/i }));
 
     expect(await screen.findByRole("heading", { name: "连接到 nanobot" }))
       .toBeInTheDocument();

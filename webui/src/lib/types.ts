@@ -404,6 +404,8 @@ export interface ChatSummary {
   workspaceScope?: WorkspaceScopePayload | null;
   /** Stable, server-owned @handle for this session. */
   handle?: SessionHandle | null;
+  /** Read-only foreign channel topic (telegram/max/...); continuing forks it. */
+  readonly?: boolean;
 }
 
 export type WorkspaceAccessMode = "restricted" | "full";
@@ -1587,7 +1589,14 @@ export type Outbound =
       action: string;
       payload: Record<string, unknown>;
     }
-  | { type: "fork_chat"; source_chat_id: string; before_user_index: number; title?: string }
+  | {
+      type: "fork_chat";
+      source_chat_id?: string;
+      before_user_index?: number;
+      /** Fork a foreign channel session with its full history. */
+      source_session_key?: string;
+      title?: string;
+    }
   | { type: "attach"; chat_id: string }
   | { type: "set_sidebar_state"; state: SidebarStatePayload }
   | { type: "discard_temporary_chat"; chat_id: string }

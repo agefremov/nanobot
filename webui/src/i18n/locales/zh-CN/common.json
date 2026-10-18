@@ -1376,6 +1376,7 @@
   "chat": {
     "fallbackTitle": "话题 {{id}}",
     "forkTitle": "分叉：{{title}}",
+    "continueTitle": "继续：{{title}}",
     "loading": "加载中…",
     "noSessions": "还没有话题。",
     "showMore": "再显示 {{count}} 个",
@@ -1413,6 +1414,7 @@
       "pinned": "置顶",
       "all": "话题",
       "projects": "项目",
+      "channels": "频道",
       "today": "今天",
       "yesterday": "昨天",
       "earlier": "更早",
@@ -1558,6 +1560,7 @@
     "composer": {
       "placeholderThread": "输入消息…",
       "placeholderHero": "问任何问题...",
+      "placeholderReadonly": "在 WebUI 中继续此话题…",
       "placeholderOpening": "正在打开新话题…",
       "placeholderStreaming": "模型正在回复…",
       "inputAria": "消息输入框",

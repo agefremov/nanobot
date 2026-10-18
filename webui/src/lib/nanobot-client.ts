@@ -959,6 +959,29 @@ export class NanobotClient {
     });
   }
 
+  /** Continue a read-only channel session by forking its full history into a WebUI chat. */
+  forkChatFromSession(
+    sourceSessionKey: string,
+    title?: string,
+    timeoutMs: number = 5_000,
+  ): Promise<string> {
+    if (this.pendingNewChat) {
+      return Promise.reject(new Error("newChat already in flight"));
+    }
+    return new Promise<string>((resolve, reject) => {
+      const timer = setTimeout(() => {
+        this.pendingNewChat = null;
+        reject(new Error("forkChatFromSession timed out"));
+      }, timeoutMs);
+      this.pendingNewChat = { resolve, reject, timer, temporary: false };
+      this.queueSend({
+        type: "fork_chat",
+        source_session_key: sourceSessionKey,
+        ...(title?.trim() ? { title: title.trim() } : {}),
+      });
+    });
+  }
+
   attach(chatId: string): void {
     if (this.temporaryChatIds.has(chatId)) return;
     this.knownChats.add(chatId);

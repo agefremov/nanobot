@@ -194,6 +194,7 @@ export async function listSessions(
     model_preset?: string | null;
     run_started_at?: number | null;
     recovery_state?: RecoveryState | null;
+    readonly?: boolean;
     workspace_scope?: WorkspaceScopePayload | null;
     handle?: SessionHandle | null;
   };
@@ -216,6 +217,7 @@ export async function listSessions(
       runStartedAt: s.run_started_at ?? null,
       recoveryState: s.recovery_state ?? null,
       workspaceScope: s.workspace_scope ?? null,
+      readonly: s.readonly === true,
       handle,
     };
   });

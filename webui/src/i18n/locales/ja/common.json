@@ -1176,6 +1176,7 @@
   "chat": {
     "fallbackTitle": "トピック {{id}}",
     "forkTitle": "分岐：{{title}}",
+    "continueTitle": "続行：{{title}}",
     "loading": "読み込み中…",
     "noSessions": "まだセッションがありません。",
     "showMore": "さらに {{count}} 件表示",
@@ -1213,6 +1214,7 @@
       "pinned": "ピン留め",
       "all": "トピック",
       "projects": "プロジェクト",
+      "channels": "チャンネル",
       "today": "今日",
       "yesterday": "昨日",
       "earlier": "以前",
@@ -1358,6 +1360,7 @@
     "composer": {
       "placeholderThread": "メッセージを入力…",
       "placeholderHero": "何を考えていますか？",
+      "placeholderReadonly": "このトピックを WebUI で続ける…",
       "placeholderOpening": "新しいトピックを開いています…",
       "placeholderStreaming": "モデルが応答しています…",
       "inputAria": "メッセージ入力欄",

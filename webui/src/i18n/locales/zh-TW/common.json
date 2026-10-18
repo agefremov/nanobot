@@ -1176,6 +1176,7 @@
   "chat": {
     "fallbackTitle": "話題 {{id}}",
     "forkTitle": "分支：{{title}}",
+    "continueTitle": "繼續：{{title}}",
     "loading": "載入中…",
     "noSessions": "目前還沒有話題。",
     "showMore": "再顯示 {{count}} 個",
@@ -1213,6 +1214,7 @@
       "pinned": "置頂",
       "all": "話題",
       "projects": "專案",
+      "channels": "頻道",
       "today": "今天",
       "yesterday": "昨天",
       "earlier": "更早",
@@ -1358,6 +1360,7 @@
     "composer": {
       "placeholderThread": "輸入訊息…",
       "placeholderHero": "任何問題都可以問…",
+      "placeholderReadonly": "在 WebUI 中繼續此主題…",
       "placeholderOpening": "正在開啟新話題…",
       "placeholderStreaming": "模型正在回覆…",
       "inputAria": "訊息輸入框",

@@ -12,6 +12,7 @@ const expectedChannels = [
   "feishu",
   "matrix",
   "mattermost",
+  "max",
   "mochat",
   "msteams",
   "napcat",

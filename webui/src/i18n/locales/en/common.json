@@ -1376,6 +1376,7 @@
   "chat": {
     "fallbackTitle": "Topic {{id}}",
     "forkTitle": "Fork: {{title}}",
+    "continueTitle": "Continue: {{title}}",
     "loading": "Loading…",
     "noSessions": "No sessions yet.",
     "showMore": "Show {{count}} more",
@@ -1413,6 +1414,7 @@
       "pinned": "Pinned",
       "all": "Topics",
       "projects": "Projects",
+      "channels": "Channels",
       "today": "Today",
       "yesterday": "Yesterday",
       "earlier": "Earlier",
@@ -1558,6 +1560,7 @@
     "composer": {
       "placeholderThread": "Type your message…",
       "placeholderHero": "Ask anything...",
+      "placeholderReadonly": "Continue this topic in WebUI…",
       "placeholderOpening": "Opening a new topic…",
       "placeholderStreaming": "Model is responding…",
       "inputAria": "Message input",

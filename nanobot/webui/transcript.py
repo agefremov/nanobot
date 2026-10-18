@@ -13,6 +13,7 @@ import threading
 import time
 import uuid
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Mapping, NamedTuple, Sequence, cast
 from urllib.parse import unquote, urlparse
@@ -1363,37 +1364,168 @@ def write_session_messages_as_transcript(
     messages: list[dict[str, Any]],
 ) -> None:
     """Write a minimal WebUI transcript from already-truncated session messages."""
-    target_chat_id = _chat_id_from_session_key(target_key)
-    rows: list[dict[str, Any]] = []
-    for msg in messages:
-        if is_hidden_history_message(msg):
-            continue
-        msg = public_history_message(msg)
-        role = msg.get("role")
-        content = msg.get("content")
-        text = content if isinstance(content, str) else ""
-        if role == "user":
-            row: dict[str, Any] = {"event": "user", "chat_id": target_chat_id, "text": text}
-            media = msg.get("media")
-            if isinstance(media, list) and media:
-                row["media_paths"] = [
-                    str(p) for p in cast(list[Any], media) if isinstance(p, str) and p
-                ]
-            for key in ("cli_apps", "mcp_presets", "session_mentions"):
-                value = msg.get(key)
-                if isinstance(value, list) and value:
-                    row[key] = json.loads(json.dumps(value, ensure_ascii=False))
-        elif role == "assistant" and text.strip():
-            row = {"event": "message", "chat_id": target_chat_id, "text": text}
-            media = msg.get("media")
-            if isinstance(media, list) and media:
-                row["media"] = [
-                    str(p) for p in cast(list[Any], media) if isinstance(p, str) and p
-                ]
-        else:
-            continue
-        rows.append(row)
+    rows = session_message_transcript_rows(target_key, messages)
     _write_transcript_lines(target_key, rows)
+
+
+def _tool_call_arguments(value: Any) -> dict[str, Any]:
+    if isinstance(value, dict):
+        return cast(dict[str, Any], value)
+    if isinstance(value, str):
+        try:
+            parsed: object = json.loads(value)
+        except json.JSONDecodeError:
+            return {}
+        if isinstance(parsed, dict):
+            return cast(dict[str, Any], parsed)
+    return {}
+
+
+def _file_edit_rows_from_tool_calls(
+    tool_calls: Any,
+    completed_call_ids: set[str],
+) -> list[dict[str, Any]]:
+    """Project write/edit/apply_patch tool calls into replayable file edits."""
+    if not isinstance(tool_calls, list):
+        return []
+    edits: list[dict[str, Any]] = []
+    for raw_call in cast(list[Any], tool_calls):
+        if not isinstance(raw_call, dict):
+            continue
+        call = cast(dict[str, Any], raw_call)
+        fn = call.get("function")
+        function = cast(dict[str, Any], fn) if isinstance(fn, dict) else {}
+        name = function.get("name")
+        if not isinstance(name, str) or name not in _FILE_EDIT_TOOL_NAMES:
+            continue
+        call_id = str(call.get("id") or "")
+        args = _tool_call_arguments(function.get("arguments"))
+        raw_paths: list[Any]
+        if name == "apply_patch":
+            patch_edits = args.get("edits")
+            raw_paths = [
+                item.get("path")
+                for item in cast(list[Any], patch_edits)
+                if isinstance(item, dict)
+            ] if isinstance(patch_edits, list) else []
+        else:
+            raw_paths = [args.get("path")]
+        completed = call_id in completed_call_ids
+        seen: set[str] = set()
+        for raw_path in raw_paths:
+            if not isinstance(raw_path, str) or not raw_path.strip():
+                continue
+            path = raw_path.strip()
+            if path in seen:
+                continue
+            seen.add(path)
+            edits.append({
+                "version": 1,
+                "call_id": call_id,
+                "tool": name,
+                "path": path,
+                "added": 0,
+                "deleted": 0,
+                "approximate": True,
+                "status": "done" if completed else "editing",
+                "phase": "end" if completed else "start",
+            })
+    return edits
+
+
+def _session_row_created_at_ms(message: dict[str, Any]) -> int | None:
+    timestamp = message.get("timestamp")
+    if not isinstance(timestamp, str) or not timestamp:
+        return None
+    try:
+        return int(datetime.fromisoformat(timestamp).timestamp() * 1000)
+    except ValueError:
+        return None
+
+
+def session_message_transcript_rows(
+    session_key: str,
+    messages: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Synthesize WebUI transcript rows from plain persisted session messages.
+
+    Channel sessions (telegram/max/...) never get a WebUI transcript; this
+    projects their session JSONL into replayable rows — user turns, assistant
+    answers, and ``file_edit`` events derived from file-editing tool calls so
+    created files stay visible in the thread.
+    """
+    chat_id = _chat_id_from_session_key(session_key)
+    completed_call_ids = {
+        str(message.get("tool_call_id") or "")
+        for message in messages
+        if isinstance(message, dict)
+        and message.get("role") == "tool"
+        and message.get("tool_call_id")
+    }
+    rows: list[dict[str, Any]] = []
+    for message in messages:
+        if not isinstance(message, dict):
+            continue
+        role = message.get("role")
+        if role == "user":
+            row = _session_user_event(session_key, message)
+            if row is not None:
+                created_at_ms = _session_row_created_at_ms(message)
+                if created_at_ms is not None:
+                    row["created_at_ms"] = created_at_ms
+                rows.append(row)
+            continue
+        if role != "assistant":
+            continue
+        edits = _file_edit_rows_from_tool_calls(
+            message.get("tool_calls"),
+            completed_call_ids,
+        )
+        if edits:
+            rows.append({"event": "file_edit", "chat_id": chat_id, "edits": edits})
+        row = _session_assistant_event(session_key, message)
+        if row is not None:
+            created_at_ms = _session_row_created_at_ms(message)
+            if created_at_ms is not None:
+                row["created_at_ms"] = created_at_ms
+            rows.append(row)
+    return rows
+
+
+def build_session_messages_thread_response(
+    session_key: str,
+    session_messages: list[dict[str, Any]],
+    *,
+    augment_user_media: Callable[[list[str]], list[dict[str, Any]]] | None = None,
+    augment_assistant_media: Callable[[list[str]], list[dict[str, Any]]] | None = None,
+    augment_assistant_text: Callable[[str], str] | None = None,
+) -> dict[str, Any] | None:
+    """Return a ``WebuiThreadPersistedPayload``-shaped view of a channel session."""
+    rows = session_message_transcript_rows(session_key, session_messages)
+    if not rows:
+        return None
+    lines = _ensure_replay_identities(rows)
+    msgs = replay_transcript_to_ui_messages(
+        lines,
+        augment_user_media=augment_user_media,
+        augment_assistant_media=augment_assistant_media,
+        augment_assistant_text=augment_assistant_text,
+        defer_trace_details=True,
+    )
+    return {
+        "schemaVersion": WEBUI_TRANSCRIPT_SCHEMA_VERSION,
+        "sessionKey": session_key,
+        "messages": msgs,
+        "completed_turn_ids": [],
+        "has_pending_tool_calls": False,
+        "active_turn_id": None,
+        "page": {
+            "before_cursor": None,
+            "has_more_before": False,
+            "loaded_message_count": len(msgs),
+            "user_message_offset": 0,
+        },
+    }
 
 
 def delete_webui_transcript(session_key: str) -> bool:

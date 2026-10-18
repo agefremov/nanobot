@@ -1101,6 +1101,7 @@ function Shell({
     refresh,
     createChat,
     forkChat,
+    continueFromSession,
     deleteChat,
     getSessionAutomations,
   } = useSessions();
@@ -1726,6 +1727,41 @@ function Shell({
       return null;
     }
   }, [forkChat, navigate, sessions, sidebarState.title_overrides, t]);
+
+  const handleContinueInWebui = useCallback(async (
+    sourceSessionKey: string,
+    content: string,
+    images?: SendAttachment[],
+    options?: SendOptions,
+  ) => {
+    try {
+      const sourceSession = sessions.find((session) => session.key === sourceSessionKey);
+      const sourceTitle = sourceSession
+        ? displayTitle(sourceSession, sidebarState.title_overrides, t("chat.newChat"))
+        : t("chat.newChat");
+      const chatId = await continueFromSession(
+        sourceSessionKey,
+        t("chat.continueTitle", { title: sourceTitle }),
+      );
+      setPendingAutomationMessage({
+        id: crypto.randomUUID(),
+        chatId,
+        content,
+        images,
+        options,
+      });
+      navigate({
+        view: "chat",
+        activeKey: `websocket:${chatId}`,
+        settingsSection: "overview",
+      });
+      setMobileSidebarOpen(false);
+      return true;
+    } catch (e) {
+      console.error("Failed to continue channel session", e);
+      return false;
+    }
+  }, [continueFromSession, navigate, sessions, sidebarState.title_overrides, t]);
 
   const onNewChat = useCallback(() => {
     navigate(defaultShellRoute());
@@ -2835,6 +2871,7 @@ function Shell({
                             pendingFirstMessage={pendingAutomationMessage}
                             onPendingFirstMessageConsumed={onPendingAutomationMessageConsumed}
                             onForkChat={temporaryChatActive ? undefined : onForkChat}
+                            onContinueInWebui={handleContinueInWebui}
                             onTurnEnd={onTurnEnd}
                             theme={theme}
                             onToggleTheme={toggle}
@@ -2873,6 +2910,7 @@ function Shell({
                           pendingFirstMessage={pendingAutomationMessage}
                           onPendingFirstMessageConsumed={onPendingAutomationMessageConsumed}
                           onForkChat={onForkChat}
+                          onContinueInWebui={handleContinueInWebui}
                           onTurnEnd={context.active ? onTurnEnd : () => void refresh()}
                           theme={theme}
                           onToggleTheme={toggle}

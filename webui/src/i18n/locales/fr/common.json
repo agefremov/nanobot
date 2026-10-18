@@ -1176,6 +1176,7 @@
   "chat": {
     "fallbackTitle": "Sujet {{id}}",
     "forkTitle": "Branche : {{title}}",
+    "continueTitle": "Continuer : {{title}}",
     "loading": "Chargement…",
     "noSessions": "Aucune session pour le moment.",
     "showMore": "Afficher {{count}} de plus",
@@ -1213,6 +1214,7 @@
       "pinned": "Épinglés",
       "all": "Sujets",
       "projects": "Projets",
+      "channels": "Canaux",
       "today": "Aujourd’hui",
       "yesterday": "Hier",
       "earlier": "Plus anciens",
@@ -1358,6 +1360,7 @@
     "composer": {
       "placeholderThread": "Saisissez votre message…",
       "placeholderHero": "Qu’avez-vous en tête ?",
+      "placeholderReadonly": "Continuer cette discussion dans le WebUI…",
       "placeholderOpening": "Ouverture d’un nouveau sujet…",
       "placeholderStreaming": "Le modèle est en train de répondre…",
       "inputAria": "Champ de message",

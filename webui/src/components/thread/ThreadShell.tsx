@@ -405,6 +405,13 @@ interface ThreadShellProps {
   pendingFirstMessage?: PendingFirstMessage & { id: string; chatId: string } | null;
   onPendingFirstMessageConsumed?: (id: string) => void;
   onForkChat?: (sourceChatId: string, beforeUserIndex: number) => Promise<string | null>;
+  /** Continue a read-only channel topic by forking it into a WebUI chat. */
+  onContinueInWebui?: (
+    sourceSessionKey: string,
+    content: string,
+    images?: SendAttachment[],
+    options?: SendOptions,
+  ) => Promise<boolean | void> | boolean | void;
   onTurnEnd?: () => void;
   theme?: "light" | "dark";
   onToggleTheme?: () => void;
@@ -613,6 +620,7 @@ export function ThreadShell({
   pendingFirstMessage = null,
   onPendingFirstMessageConsumed,
   onForkChat,
+  onContinueInWebui,
   onTurnEnd,
   theme = "light",
   onToggleTheme = () => {},
@@ -1422,6 +1430,11 @@ export function ThreadShell({
   const handleThreadSend = useCallback(
     (content: string, images?: SendAttachment[], options?: SendOptions) => {
       setFallbackModelName(null);
+      if (session?.readonly) {
+        // Read-only channel topic: continuing forks it into a WebUI chat first.
+        void onContinueInWebui?.(session.key, content, images, options);
+        return;
+      }
       const submitted = send(content, images, withWorkspaceScope(options));
       if (
         chatId
@@ -1433,7 +1446,7 @@ export function ThreadShell({
         setSubmittedViewportTurnId(submitted.turnId);
       }
     },
-    [chatId, send, withWorkspaceScope],
+    [chatId, onContinueInWebui, send, session, withWorkspaceScope],
   );
 
   const handleOpenFilePreview = useCallback((path: string) => {
@@ -1558,9 +1571,13 @@ export function ThreadShell({
           inputAriaLabel={composerInputAriaLabel}
           isStreaming={turnActive}
           placeholder={
-            composerVariant === "hero"
-              ? t("thread.composer.placeholderHero")
-              : t("thread.composer.placeholderThread")
+            session?.readonly
+              ? t("thread.composer.placeholderReadonly", {
+                  defaultValue: "Continue this topic in WebUI…",
+                })
+              : composerVariant === "hero"
+                ? t("thread.composer.placeholderHero")
+                : t("thread.composer.placeholderThread")
           }
           modelLabel={modelBadgeLabel}
           modelDetail={modelBadge.model}
@@ -1741,7 +1758,7 @@ export function ThreadShell({
             traceDetailScope={historyKey}
             onLoadTraceDetails={messagesReady ? loadTraceDetails : undefined}
             onOpenFilePreview={historyKey ? handleOpenFilePreview : undefined}
-            onForkFromMessage={onForkChat ? handleForkFromMessage : undefined}
+            onForkFromMessage={onForkChat && !session?.readonly ? handleForkFromMessage : undefined}
             onQuoteSelection={session ? handleQuoteSelection : undefined}
           />
         </FilePreviewAvailabilityProvider>

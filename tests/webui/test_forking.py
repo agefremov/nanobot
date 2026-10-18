@@ -161,3 +161,112 @@ async def test_fork_handler_maps_invalid_source_and_internal_failure_to_stable_e
 
     warning.assert_called_once_with("fork_chat failed: {}", ANY)
     channel.send_webui_protocol_error.assert_awaited_once_with(connection, "fork_chat_failed")
+
+
+def test_create_channel_fork_copies_full_history_without_channel_routing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source_messages = [
+        {"role": "user", "content": "hi"},
+        {
+            "role": "assistant",
+            "content": "hello",
+            "tool_calls": [
+                {
+                    "id": "call-1",
+                    "type": "function",
+                    "function": {"name": "write_file", "arguments": '{"path": "a.txt"}'},
+                }
+            ],
+        },
+    ]
+    manager = MagicMock()
+    manager.read_session_file.return_value = {"messages": source_messages}
+    forked = SimpleNamespace(
+        messages=list(source_messages),
+        metadata={"_compaction_route": {"channel": "max", "chat_id": "1"}},
+    )
+    manager.fork_session_before_user_index.return_value = forked
+    rebuild = MagicMock()
+    marker = MagicMock()
+    monkeypatch.setattr(forking.uuid, "uuid4", lambda: "fork-id")
+    monkeypatch.setattr(forking, "write_session_messages_as_transcript", rebuild)
+    monkeypatch.setattr(forking, "append_fork_marker", marker)
+
+    result = forking.create_webui_channel_fork(
+        manager,
+        source_key="max:451041899",
+    )
+
+    assert result == ("fork-id", "websocket:fork-id")
+    manager.fork_session_before_user_index.assert_called_once_with(
+        "max:451041899",
+        "websocket:fork-id",
+        1,
+    )
+    assert "_compaction_route" not in forked.metadata
+    rebuild.assert_called_once_with("websocket:fork-id", forked.messages)
+    marker.assert_called_once_with("websocket:fork-id")
+    assert forked.metadata[WEBUI_TITLE_METADATA_KEY] == "hi"
+    manager.save.assert_called_once_with(forked, fsync=True)
+
+
+def test_create_channel_fork_rejects_non_channel_keys() -> None:
+    manager = MagicMock()
+    assert (
+        forking.create_webui_channel_fork(manager, source_key="websocket:chat-1")
+        is None
+    )
+    assert forking.create_webui_channel_fork(manager, source_key="api:default") is None
+    manager.read_session_file.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_fork_handler_creates_channel_fork_from_source_session_key(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    connection = object()
+    channel = SimpleNamespace(
+        send_webui_protocol_error=AsyncMock(),
+        attach_webui_fork=AsyncMock(),
+        gateway=SimpleNamespace(session_manager=MagicMock()),
+    )
+    create = MagicMock(return_value=("fork-id", "websocket:fork-id"))
+    monkeypatch.setattr(forking, "create_webui_channel_fork", create)
+
+    await forking.handle_webui_fork_chat(
+        channel,
+        connection,
+        {"source_session_key": "telegram:1269920255", "title": "  Topic  "},
+    )
+
+    create.assert_called_once_with(
+        channel.gateway.session_manager,
+        source_key="telegram:1269920255",
+        title="  Topic  ",
+    )
+    channel.attach_webui_fork.assert_awaited_once_with(
+        connection,
+        fork_id="fork-id",
+        fork_key="websocket:fork-id",
+    )
+
+
+@pytest.mark.asyncio
+async def test_fork_handler_rejects_invalid_source_session_key() -> None:
+    connection = object()
+    channel = SimpleNamespace(
+        send_webui_protocol_error=AsyncMock(),
+        gateway=SimpleNamespace(session_manager=MagicMock()),
+    )
+
+    await forking.handle_webui_fork_chat(
+        channel,
+        connection,
+        {"source_session_key": "api:default"},
+    )
+
+    channel.send_webui_protocol_error.assert_awaited_once_with(
+        connection,
+        "invalid source_session_key",
+    )
