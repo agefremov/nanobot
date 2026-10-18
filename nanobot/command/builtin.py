@@ -20,6 +20,7 @@ from nanobot.providers.base import LLMUsage
 from nanobot.utils.helpers import build_status_content
 from nanobot.utils.restart import set_restart_notice_to_env
 from nanobot.utils.workspace_prompts import initialize_workspace_prompt
+from nanobot.webui.session_identity import channel_session_name
 
 if TYPE_CHECKING:
     from nanobot.agent.loop import AgentLoop
@@ -317,6 +318,18 @@ async def cmd_new(ctx: CommandContext) -> OutboundMessage:
     loop.discard_session_file_state(ctx.key)
     session = ctx.session or loop.sessions.get_or_create(ctx.key)
     snapshot = list(session.messages)
+    if channel_session_name(session.key) is not None:
+        # Keep the cleared channel dialog visible in the WebUI: archive the
+        # raw messages as a read-only topic before resetting the session.
+        try:
+            loop.sessions.create_session_archive(
+                session.key,
+                snapshot,
+                metadata=session.metadata,
+                created_at=session.created_at,
+            )
+        except Exception:
+            logger.exception("Failed to archive session {} on /new", session.key)
     archive_snapshot = None
     runtime = None
     if session.last_archived < len(snapshot):

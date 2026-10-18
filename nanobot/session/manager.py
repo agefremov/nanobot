@@ -1935,6 +1935,59 @@ class SessionManager:
         self.save(target, fsync=True)
         return target
 
+    def create_session_archive(
+        self,
+        source_key: str,
+        messages: list[dict[str, Any]],
+        *,
+        metadata: dict[str, Any] | None = None,
+        created_at: datetime | None = None,
+    ) -> Session | None:
+        """Persist a read-only archive copy of *messages* under a derived key.
+
+        ``/new`` archives a cleared channel dialog here (for example
+        ``telegram:1:archive:20261018-120322``) so the WebUI keeps showing it
+        as a read-only archived topic instead of dropping the history from the
+        sidebar when the live session is reset in place.
+        """
+        copied = [
+            public_history_message(message)
+            for message in messages
+            if isinstance(message, dict) and not message.get("_command")
+        ]
+        if not copied:
+            return None
+        now = datetime.now()
+        archive_key = self._unique_archive_key(source_key, now)
+        archive_metadata = deepcopy(metadata or {})
+        for volatile_key in _FORK_VOLATILE_METADATA_KEYS:
+            archive_metadata.pop(volatile_key, None)
+        # An archived copy must never route compaction summaries back to the
+        # source channel chat.
+        archive_metadata.pop("_compaction_route", None)
+        archive_metadata["title"] = f"Архив от {now.strftime('%d.%m.%Y %H:%M')}"
+        archive_metadata["archived"] = True
+        archive_metadata["archived_at"] = now.isoformat()
+        archive_metadata["archived_from"] = source_key
+        target = Session(
+            key=archive_key,
+            messages=copied,
+            created_at=created_at or now,
+            updated_at=now,
+            metadata=archive_metadata,
+        )
+        self.save(target, fsync=True)
+        return target
+
+    def _unique_archive_key(self, source_key: str, stamp: datetime) -> str:
+        base = f"{source_key}:archive:{stamp.strftime('%Y%m%d-%H%M%S')}"
+        candidate = base
+        counter = 2
+        while self._cached(candidate) is not None or self._load(candidate) is not None:
+            candidate = f"{base}-{counter}"
+            counter += 1
+        return candidate
+
     def read_session_file(self, key: str) -> dict[str, Any] | None:
         """Read a session without populating the cache."""
         return cast(dict[str, Any] | None, self._store.read(key))
