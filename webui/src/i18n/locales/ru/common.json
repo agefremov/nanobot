@@ -1457,7 +1457,7 @@
   },
   "thread": {
     "compaction": {
-      "cancelled": "Сжатие контекста отменена",
+      "cancelled": "Сжатие контекста отменено",
       "empty": "Нечего сжимать.",
       "started": "Сжатие контекста",
       "failed": "Сжатие контекста не удалось",
@@ -1831,7 +1831,7 @@
     "copiedReply": "Скопировано",
     "turnLatencyTitle": "Время отклика (от конца до конца)",
     "fileEditViewDiff": "Посмотреть diff",
-    "fileEditViewLargeDiff": "Посмотреть большие diff",
+    "fileEditViewLargeDiff": "Посмотреть большой diff",
     "fileEditDiffLineCount": "{{count}} строк",
     "fileEditUnchangedLinesHidden": "{{count}} неизменённых строк скрыто",
     "fileEditShowMoreLines": "Показать ещё {{count}} строк",

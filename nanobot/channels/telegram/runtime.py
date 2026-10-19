@@ -530,7 +530,7 @@ class TelegramChannel(BaseChannel):
         BotCommand("dream_restore", "Восстановить память"),
         BotCommand("dream_prompt", "Управление консолидацией"),
         BotCommand("evaluator_prompt", "Настройки пульса"),
-        BotCommand("help", "Показать комманды"),
+        BotCommand("help", "Показать команды"),
     ]
 
     # Regex for slash commands routed to AgentLoop via ``_forward_command``.
