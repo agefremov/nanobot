@@ -61,8 +61,12 @@ function groupChannelSessions(
   sessions: ChatSummary[],
   options: ChatGroupingOptions,
 ): SessionGroup[] {
+  const archived = new Set(options.archivedKeys);
   const byChannel = new Map<string, ChatSummary[]>();
   for (const session of sessions) {
+    // Archived channel topics follow the sidebar archive: hidden entirely
+    // unless the archive view is on, and then sorted last inside their channel.
+    if (archived.has(session.key) && !options.showArchived) continue;
     const channel = session.channel?.trim() || "channel";
     const bucket = byChannel.get(channel);
     if (bucket) bucket.push(session);
@@ -86,8 +90,11 @@ function groupChannelSessions(
         options.sort,
         options.titleOverrides,
         options.sessionOrder,
-      ),
+      ).sort((a, b) => (
+        Number(archived.has(a.key)) - Number(archived.has(b.key))
+      )),
     }))
+    .filter((group) => group.sessions.length > 0)
     .sort((a, b) => dateToTime(b.updatedAt) - dateToTime(a.updatedAt));
 }
 

@@ -2326,6 +2326,74 @@ describe("App layout", () => {
     expect(within(sidebar).queryByRole("button", { name: "View" })).not.toBeInTheDocument();
   });
 
+  it("hides archived channel topics until the archive view is enabled", async () => {
+    mockSessions = [
+      {
+        key: "telegram:100",
+        channel: "telegram",
+        chatId: "100",
+        createdAt: "2026-04-16T10:00:00Z",
+        updatedAt: "2026-04-16T10:00:00Z",
+        preview: "Old topic",
+        title: "Old topic",
+        readonly: true,
+      },
+      {
+        key: "telegram:200",
+        channel: "telegram",
+        chatId: "200",
+        createdAt: "2026-04-16T11:00:00Z",
+        updatedAt: "2026-04-16T11:00:00Z",
+        preview: "Live topic",
+        title: "Live topic",
+        readonly: true,
+      },
+    ];
+    const initialState = {
+      schema_version: 1,
+      pinned_keys: [],
+      archived_keys: ["telegram:100"],
+      title_overrides: {},
+      tags_by_key: {},
+      collapsed_groups: {},
+      view: {
+        density: "comfortable",
+        show_previews: false,
+        show_timestamps: false,
+        show_archived: false,
+        sort: "updated_desc",
+      },
+      updated_at: null,
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation(async (url: string | URL | Request) => {
+        const href = String(url);
+        if (href === "/api/webui/sidebar-state") {
+          return { ok: true, json: async () => initialState };
+        }
+        return { ok: false, status: 404 };
+      }),
+    );
+
+    render(<App />);
+
+    await waitFor(() => expect(connectSpy).toHaveBeenCalled());
+    act(() => {
+      statusHandlers.forEach((handler) => handler("open"));
+    });
+    const sidebar = screen.getByRole("navigation", { name: "Sidebar navigation" });
+    await waitFor(() =>
+      expect(within(sidebar).getByRole("button", { name: /^Live topic$/ })).toBeInTheDocument(),
+    );
+    expect(within(sidebar).queryByRole("button", { name: /^Old topic$/ })).not.toBeInTheDocument();
+
+    fireEvent.click(within(sidebar).getByRole("button", { name: "Show archived" }));
+    await waitFor(() =>
+      expect(within(sidebar).getByRole("button", { name: /^Old topic$/ })).toBeInTheDocument(),
+    );
+  });
+
   it("sorts chats by displayed title when A-Z is persisted", async () => {
     mockSessions = [
       {
