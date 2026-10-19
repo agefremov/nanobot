@@ -147,7 +147,7 @@ export function FilePreviewPanel({
           >
             <nav
               aria-label={t("filePreview.breadcrumb", { defaultValue: "File path" })}
-              className="flex min-w-0 flex-1 items-center overflow-hidden text-sm leading-5"
+              className="flex min-w-0 flex-auto items-center overflow-hidden text-sm leading-5"
               title={breadcrumbTitle}
               data-testid="file-preview-breadcrumb"
             >

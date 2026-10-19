@@ -1,8 +1,8 @@
 export const LOCALE_STORAGE_KEY = "nanobot.locale";
 
 export const supportedLocales = [
-  { code: "en", nativeLabel: "English" },
   { code: "ru", nativeLabel: "Русский" },
+  { code: "en", nativeLabel: "English" },
   { code: "zh-CN", nativeLabel: "简体中文" },
   { code: "zh-TW", nativeLabel: "繁體中文" },
   { code: "fr", nativeLabel: "Français" },
@@ -16,7 +16,7 @@ export const supportedLocales = [
 
 export type SupportedLocale = (typeof supportedLocales)[number]["code"];
 
-export const defaultLocale: SupportedLocale = "en";
+export const defaultLocale: SupportedLocale = "ru";
 export const fallbackLocale: SupportedLocale = "en";
 
 export function normalizeLocale(
