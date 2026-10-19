@@ -16,7 +16,7 @@
         "placeholder": "* или ID пользователей Telegram"
       },
       "groupPolicy": {
-        "label": "Поведение группы",
+        "label": "Поведение в группе",
         "choices": {
           "mention": "Только упоминание",
           "open": "Все сообщения",
@@ -26,8 +26,8 @@
       "mode": {
         "label": "Режим подключения",
         "choices": {
-          "polling": "Долгое опрос",
-          "webhook": "Webhook"
+          "polling": "Long Polling",
+          "webhook": "Web Hook"
         }
       },
       "replyToMessage": {
@@ -61,7 +61,7 @@
         }
       },
       "richMessages": {
-        "label": "Расширенные сообщения",
+        "label": "Rich Messages",
         "choices": {
           "true": "Включено",
           "false": "Выключено"
