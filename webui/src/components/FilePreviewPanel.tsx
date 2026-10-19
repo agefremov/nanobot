@@ -145,9 +145,23 @@ export function FilePreviewPanel({
             className="flex h-11 shrink-0 items-center gap-2 border-b border-border/60 px-3"
             title={previewPath}
           >
+            <button
+              type="button"
+              onClick={onClose}
+              className={cn(
+                "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md",
+                "text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              )}
+              title={t("filePreview.close", { defaultValue: "Close file preview" })}
+              aria-label={t("filePreview.close", { defaultValue: "Close file preview" })}
+              data-testid="file-preview-close"
+            >
+              <X className="h-4 w-4" aria-hidden />
+            </button>
             <nav
               aria-label={t("filePreview.breadcrumb", { defaultValue: "File path" })}
-              className="flex min-w-0 flex-auto items-center overflow-hidden text-sm leading-5"
+              className="flex min-w-0 flex-1 items-center overflow-hidden text-sm leading-5"
               title={breadcrumbTitle}
               data-testid="file-preview-breadcrumb"
             >
@@ -196,20 +210,6 @@ export function FilePreviewPanel({
                 );
               })}
             </nav>
-            <button
-              type="button"
-              onClick={onClose}
-              className={cn(
-                "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md",
-                "text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-              )}
-              title={t("filePreview.close", { defaultValue: "Close file preview" })}
-              aria-label={t("filePreview.close", { defaultValue: "Close file preview" })}
-              data-testid="file-preview-close"
-            >
-              <X className="h-4 w-4" aria-hidden />
-            </button>
           </div>
 
           <div className="min-h-0 flex-1 overflow-auto">
