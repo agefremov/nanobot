@@ -114,6 +114,65 @@ _VOICE_NOTICE_TEXT = (
 )
 
 
+# Slash-command menu published with `PATCH /me/commands` when the channel
+# starts (analog of Telegram's `set_my_commands`, so the MAX client offers a
+# command palette). Names are canonical nanobot commands: unlike Telegram's
+# BotCommand.name, the MAX schema allows hyphens.
+MAX_BOT_COMMANDS: list[dict[str, str]] = [
+    {"name": "new", "description": "Новый диалог"},
+    {"name": "compact", "description": "Сжать контекст"},
+    {"name": "stop", "description": "Прервать задачу"},
+    {"name": "restart", "description": "Перезапустить агента"},
+    {"name": "status", "description": "Текущий статус"},
+    {"name": "history", "description": "История сообщений"},
+    {"name": "goal", "description": "Запустить фоновую задачу"},
+    {"name": "trigger", "description": "Создать триггер"},
+    {"name": "pairing", "description": "Управление сопряжением"},
+    {"name": "model", "description": "Сменить модель"},
+    {"name": "skill", "description": "Показать навыки"},
+    {"name": "dream", "description": "Консолидация памяти"},
+    {"name": "dream-log", "description": "История консолидации"},
+    {"name": "dream-restore", "description": "Восстановить память"},
+    {"name": "dream-prompt", "description": "Управление консолидацией"},
+    {"name": "evaluator-prompt", "description": "Настройки пульса"},
+    {"name": "start", "description": "Запустить бота"},
+    {"name": "help", "description": "Показать команды"},
+]
+# A bare `/start` (optionally `/start@bot`) is answered by the channel itself
+# with a greeting — mirror of Telegram's `_on_start` — instead of falling into
+# the router's "unknown command" reply.
+_START_COMMAND_RE = re.compile(r"^/start(?:@\w+)?$", re.IGNORECASE)
+# MAX accepts hyphenated command names, but users typing from Telegram muscle
+# memory send "/dream_log"; map underscore aliases back to canonical commands.
+_MAX_COMMAND_ALIASES = {
+    "/dream_log": "/dream-log",
+    "/dream_restore": "/dream-restore",
+    "/dream_prompt": "/dream-prompt",
+    "/evaluator_prompt": "/evaluator-prompt",
+}
+
+
+def _normalize_max_command(content: str) -> str:
+    """Map underscore command aliases back to canonical nanobot commands."""
+    if not content.startswith("/"):
+        return content
+    for alias, canonical in _MAX_COMMAND_ALIASES.items():
+        if content == alias or content.startswith(f"{alias} "):
+            return f"{canonical}{content[len(alias):]}"
+    return content
+
+
+def _start_greeting(sender: dict[str, Any]) -> str:
+    """Greeting for a typed `/start` (mirror of Telegram's `_on_start` reply)."""
+    name = str(sender.get("first_name") or "").strip()
+    hello = f"Привет, {name}!" if name else "Привет!"
+    return (
+        f"👋 {hello} Я nanobot.\n\n"
+        "Напишите мне сообщение — я отвечу.\n"
+        "Список команд: /help"
+    )
+
+
 class MaxConfig(Base):
     """MAX messenger channel configuration."""
 
@@ -400,6 +459,7 @@ class MaxChannel(BaseChannel):
         ) as client:
             self._client = client
             try:
+                await self._register_commands()
                 if self.config.mode == "webhook":
                     await self._run_webhook()
                 else:
@@ -427,6 +487,25 @@ class MaxChannel(BaseChannel):
         self._download_client = None
         if download_client is not None:
             await download_client.aclose()
+
+    async def _register_commands(self) -> None:
+        """Publish the slash-command menu (analog of Telegram's set_my_commands).
+
+        Failure is non-fatal: the bot keeps working without the client-side
+        command palette.
+        """
+        client = self._require_client()
+        try:
+            response = await client.patch(
+                "/me/commands", json={"commands": MAX_BOT_COMMANDS}
+            )
+            response.raise_for_status()
+        except Exception as exc:
+            self.logger.warning("Failed to register MAX bot commands: {}", exc)
+            return
+        self.logger.info(
+            "MAX bot commands registered ({})", len(MAX_BOT_COMMANDS)
+        )
 
     async def _run_polling(self) -> None:
         """Long polling transport (default)."""
@@ -734,7 +813,7 @@ class MaxChannel(BaseChannel):
             while len(self._seen_mids) > _SEEN_MIDS_MAX:
                 self._seen_mids.popitem(last=False)
 
-        text = (body.get("text") or "").strip()
+        text = _normalize_max_command((body.get("text") or "").strip())
         audio_items = _audio_attachments(body)
         media_items = _media_attachments(body)
         if not text and not audio_items and not media_items:
@@ -787,6 +866,23 @@ class MaxChannel(BaseChannel):
                     str(chat_ref),
                     origin_mid=str(mid) if mid is not None else None,
                 )
+
+        # Typed `/start` is answered here (mirror of Telegram's `_on_start`)
+        # instead of reaching the router as an unknown command. Senders outside
+        # allowFrom fall through to `_handle_message`, which issues the pairing
+        # code in DMs.
+        if _START_COMMAND_RE.match(text) and self.is_allowed(str(sender_id)):
+            self.logger.info(
+                "MAX {} /start from {} in {}", chat_type, sender_id, chat_id
+            )
+            await self.send(
+                OutboundMessage(
+                    channel=self.name,
+                    chat_id=chat_id,
+                    content=_start_greeting(sender),
+                )
+            )
+            return
 
         attachment_types = [
             str(item.get("type"))
