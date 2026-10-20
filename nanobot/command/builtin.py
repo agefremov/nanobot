@@ -1071,14 +1071,39 @@ async def cmd_user_shell(ctx: CommandContext) -> OutboundMessage:
     return await ctx.loop.execute_user_shell_command(ctx)
 
 
+# Russian help text for the /help command (fork localization).
+# Keyed by canonical command; entries fall back to the English spec
+# description so a newly added command never renders blank.
+HELP_DESCRIPTIONS_RU: dict[str, str] = {
+    "/new": "Сбросить этот чат и начать новый диалог.",
+    "/compact": "Сжать контекст этого чата и продолжить диалог.",
+    "/stop": "Отменить текущий ход агента в этом чате.",
+    "/restart": "Перезапустить процесс бота.",
+    "/status": "Показать статус рантайма, провайдера и каналов.",
+    "/model": "Показать или сменить активный пресет модели.",
+    "/history": "Показать последние N сохранённых сообщений диалога.",
+    "/goal": "Попросить агента выполнить запрос как долгосрочную цель.",
+    "/trigger": "Создать именованный локальный триггер для этой сессии.",
+    "/dream": "Вручную запустить консолидацию памяти.",
+    "/dream-log": "Показать, что изменила последняя консолидация Dream.",
+    "/dream-restore": "Восстановить память к предыдущему снимку Dream.",
+    "/dream-prompt": "Настроить, как Dream организует память этого воркспейса.",
+    "/evaluator-prompt": "Настроить промпт фильтра heartbeat-уведомлений.",
+    "/skill": "Показать все доступные агенту скиллы.",
+    "/help": "Показать список слэш-команд.",
+    "/pairing": "Показать, одобрить, отклонить или отозвать pairing-запросы.",
+}
+
+
 def build_help_text() -> str:
     """Build canonical help text shared across channels."""
-    lines = ["🐈 nanobot commands:"]
+    lines = ["🐈 Команды nanobot:"]
     for spec in BUILTIN_COMMAND_SPECS:
         command = spec.command
         if spec.arg_hint:
             command = f"{command} {spec.arg_hint}"
-        lines.append(f"{command} — {spec.description}")
+        description = HELP_DESCRIPTIONS_RU.get(spec.command, spec.description)
+        lines.append(f"{command} — {description}")
     return "\n".join(lines)
 
 

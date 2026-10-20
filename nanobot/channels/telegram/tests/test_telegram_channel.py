@@ -3262,10 +3262,10 @@ def _compaction_message(phase: str, compaction_id: str = "c1") -> OutboundMessag
         channel="telegram",
         chat_id="999",
         content={
-            "started": "Compressing context…",
-            "succeeded": "Context compacted.",
-            "failed": "Unable to compact context.",
-            "cancelled": "Context compaction cancelled.",
+            "started": "Сжатие контекста…",
+            "succeeded": "Контекст сжат.",
+            "failed": "Не удалось сжать контекст.",
+            "cancelled": "Сжатие контекста отменено.",
         }[phase],
         event=ContextCompactionEvent(compaction_id=compaction_id, phase=phase),
     )
@@ -3292,7 +3292,7 @@ async def test_compaction_terminal_phase_edits_started_notice_in_place() -> None
     # The outcome rewrites the original notice instead of posting a new message.
     channel._app.bot.send_message.assert_awaited_once()
     channel._app.bot.edit_message_text.assert_awaited_once_with(
-        chat_id=999, message_id=77, text="Context compacted.",
+        chat_id=999, message_id=77, text="Контекст сжат.",
     )
     assert ("999", "c1") not in channel._compaction_notices
 
@@ -3354,6 +3354,6 @@ async def test_compaction_notices_are_tracked_per_compaction_id() -> None:
     await channel.send(_compaction_message("succeeded", compaction_id="c1"))
 
     channel._app.bot.edit_message_text.assert_awaited_once_with(
-        chat_id=999, message_id=101, text="Context compacted.",
+        chat_id=999, message_id=101, text="Контекст сжат.",
     )
     assert channel._compaction_notices == {("999", "c2"): 202}
