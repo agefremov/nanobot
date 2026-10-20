@@ -34,6 +34,7 @@ import httpx
 from pydantic import Field
 
 from nanobot.bus.events import OutboundMessage
+from nanobot.bus.outbound_events import ProgressEvent
 from nanobot.bus.queue import MessageBus
 from nanobot.channels.base import BaseChannel
 from nanobot.config.paths import get_data_dir, get_media_dir
@@ -50,10 +51,18 @@ _UPDATES_TYPES = ",".join(_DEFAULT_UPDATE_TYPES)
 # MAX delivers each webhook event with up to 10 retries; acknowledge fast and
 # process out of band so a slow LLM turn never causes redelivery.
 _WEBHOOK_SECRET_HEADER = "X-Max-Bot-Api-Secret"
-# Chat actions (`POST /chats/{chatId}/actions`) are the only feedback primitive
-# MAX gives a bot besides messages themselves: no message editing, no streaming.
+# Feedback primitives: chat actions (`POST /chats/{chatId}/actions`) plus
+# message editing/deletion (`PUT`/`DELETE /messages`). MAX has no streaming and
+# no message reactions at all (checked against the official OpenAPI schema and
+# clients), so a live status message doubles as the 👀 reaction substitute.
 _ACTION_TYPING_ON = "typing_on"
 _ACTION_MARK_SEEN = "mark_seen"
+# Status message lifecycle: created shortly after the message is read (quick
+# replies never produce it), edited with progress while the turn runs, closed
+# when the reply lands.
+_STATUS_CREATE_DELAY_S = 2.5
+_STATUS_MIN_EDIT_INTERVAL_S = 1.0
+_STATUS_HINT_MAX_LENGTH = 80
 # A typing indicator has to be refreshed; also cap it so a stuck turn cannot
 # keep the bot "typing" forever.
 _TYPING_MAX_DURATION_S = 600.0
@@ -133,8 +142,24 @@ class MaxConfig(Base):
     typing_indicator: bool = True
     typing_interval_seconds: float = Field(default=4.0, gt=0, le=60)
     typing_max_seconds: float = Field(default=300.0, gt=0, le=3600)
+    # Live status message (reaction substitute): 👀 on receipt, edited with
+    # progress while the turn runs, deleted (default) or frozen as a bare 👀
+    # once the reply lands.
+    status_message: bool = True
+    status_emoji: str = "👀"
+    status_delete_on_reply: bool = True
+    status_refresh_seconds: float = Field(default=15.0, gt=0, le=600)
     # Inbound attachment download cap in megabytes (0 disables the limit).
     download_max_mb: int = Field(default=100, ge=0, le=4096)
+
+
+def _format_elapsed(seconds: float) -> str:
+    """Human-readable turn duration for the live status message."""
+    total = max(0, int(seconds))
+    if total < 60:
+        return f"{total} сек"
+    minutes, rest = divmod(total, 60)
+    return f"{minutes} мин {rest:02d} сек"
 
 
 def chunk_text(text: str, limit: int = MAX_TEXT_LENGTH) -> list[str]:
@@ -306,11 +331,19 @@ class MaxChannel(BaseChannel):
         self._typing_tasks: dict[str, asyncio.Task[None]] = {}
         # session chat id -> MAX chat id used by POST /chats/{chatId}/actions
         self._action_chat_ids: dict[str, str] = {}
+        # session chat id -> live status message bookkeeping (👀 + progress).
+        self._status_tasks: dict[str, asyncio.Task[None]] = {}
+        self._status_mid: dict[str, str] = {}
+        self._status_reply_mid: dict[str, str] = {}
+        self._status_started: dict[str, float] = {}
+        self._status_hint: dict[str, str] = {}
+        self._status_last_edit: dict[str, float] = {}
 
     def progress_transport_defaults(self) -> tuple[bool, bool] | None:
-        # MAX has no message editing: progress/tool hints would arrive as
-        # separate messages and hit the 2 msgs/sec chat limit.
-        return False, False
+        # Tool hints fold into the live status message. Plain progress text
+        # stays off: MAX cannot edit-merge it and separate messages hit the
+        # 2 msgs/sec chat limit.
+        return (False, True) if self.config.status_message else (False, False)
 
     def should_retry_send_error(self, error: Exception) -> bool:
         # 4xx business errors (bad target, rejected payload) cannot succeed
@@ -383,6 +416,10 @@ class MaxChannel(BaseChannel):
             stop_event.set()
         for chat_id in list(self._typing_tasks):
             self._stop_typing(chat_id)
+        for chat_id in list(self._status_tasks):
+            task = self._status_tasks.pop(chat_id, None)
+            if task is not None and not task.done():
+                task.cancel()
         client = self._client
         if client is not None:
             await client.aclose()
@@ -744,6 +781,12 @@ class MaxChannel(BaseChannel):
                 await self._send_action(str(chat_ref), _ACTION_MARK_SEEN)
             if self.config.typing_indicator:
                 self._start_typing(chat_id)
+            if self.config.status_message:
+                self._start_status(
+                    chat_id,
+                    str(chat_ref),
+                    origin_mid=str(mid) if mid is not None else None,
+                )
 
         attachment_types = [
             str(item.get("type"))
@@ -1044,18 +1087,170 @@ class MaxChannel(BaseChannel):
         except asyncio.CancelledError:
             return
 
+    def _start_status(
+        self, chat_id: str, action_chat_id: str, *, origin_mid: str | None,
+    ) -> None:
+        """Open the status-message lifecycle for the turn in *chat_id*.
+
+        Creation is delayed briefly: quick replies never produce the extra
+        message at all, while long turns get a visible 👀 ack plus live edits.
+        """
+        key = str(chat_id)
+        if key in self._status_tasks:
+            return
+        if origin_mid:
+            self._status_reply_mid[key] = origin_mid
+        task = asyncio.create_task(self._status_loop(key, action_chat_id))
+        self._status_tasks[key] = task
+        task.add_done_callback(
+            lambda _task, key=key: self._status_tasks.pop(key, None)
+        )
+
+    async def _status_loop(self, chat_id: str, action_chat_id: str) -> None:
+        try:
+            await asyncio.sleep(_STATUS_CREATE_DELAY_S)
+            if not self._running:
+                return
+            self._status_started[chat_id] = time.monotonic()
+            mid = await self._post_status(chat_id, action_chat_id)
+            if mid is None:
+                self._status_started.pop(chat_id, None)
+                return
+            self._status_mid[chat_id] = mid
+            self._status_last_edit[chat_id] = time.monotonic()
+            deadline = time.monotonic() + _TYPING_MAX_DURATION_S
+            while self._running and time.monotonic() < deadline:
+                await asyncio.sleep(self.config.status_refresh_seconds)
+                if chat_id not in self._status_mid:
+                    return
+                await self._maybe_edit_status(chat_id)
+        except asyncio.CancelledError:
+            return
+
+    async def _post_status(self, chat_id: str, action_chat_id: str) -> str | None:
+        """Send the 👀 status message, replying to the triggering message."""
+        client = self._client
+        if client is None:
+            return None
+        body: dict[str, Any] = {"text": self._status_text(chat_id)}
+        reply_mid = self._status_reply_mid.get(chat_id)
+        if reply_mid:
+            body["link"] = {"type": "reply", "mid": reply_mid}
+        try:
+            response = await client.post(
+                "/messages", params={"chat_id": action_chat_id}, json=body,
+            )
+            if response.status_code == 429:
+                await asyncio.sleep(_RATE_LIMIT_BACKOFF_S)
+                response = await client.post(
+                    "/messages", params={"chat_id": action_chat_id}, json=body,
+                )
+            response.raise_for_status()
+            payload = response.json()
+            message = payload.get("message") or {} if isinstance(payload, dict) else {}
+            inner = message.get("body") or {}
+            mid = inner.get("mid") or message.get("mid")
+            return str(mid) if mid else None
+        except (httpx.HTTPError, ValueError) as exc:
+            self.logger.debug("MAX status message to {} failed: {}", chat_id, exc)
+            return None
+
+    def _status_text(self, chat_id: str) -> str:
+        emoji = (self.config.status_emoji or "").strip() or "👀"
+        hint = self._status_hint.get(chat_id) or "Работаю…"
+        started = self._status_started.get(chat_id)
+        parts = [emoji, hint]
+        if started is not None:
+            parts.append(_format_elapsed(time.monotonic() - started))
+        return " · ".join(parts)
+
+    async def _note_status_hint(self, chat_id: str, hint: str) -> None:
+        """Fold interim progress text into the live status message."""
+        key = str(chat_id)
+        cleaned = " ".join(hint.split())
+        if cleaned:
+            self._status_hint[key] = cleaned[:_STATUS_HINT_MAX_LENGTH]
+        await self._maybe_edit_status(key)
+
+    async def _maybe_edit_status(self, chat_id: str) -> None:
+        mid = self._status_mid.get(chat_id)
+        if mid is None:
+            # Before creation the hint is stored and rendered at creation time.
+            return
+        now = time.monotonic()
+        if now - self._status_last_edit.get(chat_id, 0.0) < _STATUS_MIN_EDIT_INTERVAL_S:
+            return
+        self._status_last_edit[chat_id] = now
+        await self._edit_status_text(mid, self._status_text(chat_id))
+
+    async def _edit_status_text(self, mid: str, text: str) -> None:
+        client = self._client
+        if client is None:
+            return
+        try:
+            response = await client.put(
+                "/messages", params={"message_id": mid}, json={"text": text},
+            )
+            if response.status_code >= 400:
+                self.logger.debug(
+                    "MAX status edit {} -> {}", mid, response.status_code,
+                )
+        except httpx.HTTPError as exc:
+            self.logger.debug("MAX status edit {} failed: {}", mid, exc)
+
+    async def _finish_status(self, chat_id: str) -> None:
+        """Close the status lifecycle once the reply is delivered.
+
+        The message is deleted by default (clean chat); with
+        ``status_delete_on_reply`` off it freezes as a bare 👀 — the closest
+        thing to a persistent reaction MAX allows.
+        """
+        key = str(chat_id)
+        task = self._status_tasks.pop(key, None)
+        if task is not None and not task.done():
+            task.cancel()
+        mid = self._status_mid.pop(key, None)
+        self._status_started.pop(key, None)
+        self._status_hint.pop(key, None)
+        self._status_last_edit.pop(key, None)
+        self._status_reply_mid.pop(key, None)
+        if mid is None:
+            return
+        if not self.config.status_delete_on_reply:
+            emoji = (self.config.status_emoji or "").strip() or "👀"
+            await self._edit_status_text(mid, emoji)
+            return
+        client = self._client
+        if client is None:
+            return
+        try:
+            response = await client.delete("/messages", params={"message_id": mid})
+            if response.status_code >= 400:
+                self.logger.debug(
+                    "MAX status delete {} -> {}", mid, response.status_code,
+                )
+        except httpx.HTTPError as exc:
+            self.logger.debug("MAX status delete {} failed: {}", mid, exc)
+
     async def send(self, msg: OutboundMessage) -> None:
+        chat_id = str(msg.chat_id)
+        if isinstance(msg.event, ProgressEvent):
+            # Interim feedback folds into the live status message so long turns
+            # stay visible without flooding the chat.
+            if self.config.status_message:
+                await self._note_status_hint(chat_id, (msg.content or "").strip())
+            return
         # First chunk means "stop typing"; the answer is on its way.
-        self._stop_typing(str(msg.chat_id))
+        self._stop_typing(chat_id)
         content = (msg.content or "").strip()
         route = self._resolve_route(msg.chat_id)
-        chat_id = str(msg.chat_id)
         media = [m for m in (msg.media or []) if isinstance(m, str) and m.strip()]
         if not media:
             if not content:
                 return
             for chunk in chunk_text(content):
                 await self._send_text(route, chunk, chat_id=chat_id)
+            await self._finish_status(chat_id)
             return
         # Media delivery must never raise: a manager-level retry would upload
         # and send every attachment a second time.
@@ -1066,6 +1261,7 @@ class MaxChannel(BaseChannel):
                     await self._send_text(route, chunk, chat_id=chat_id)
         except Exception:
             self.logger.exception("MAX media delivery failed for {}", media)
+        await self._finish_status(chat_id)
 
     async def _send_media_message(
         self,
