@@ -8,8 +8,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { ArrowRight, ChevronDown, Eye, EyeOff, Moon, ShieldCheck, Sun, X } from "lucide-react";
-import { Trans, useTranslation } from "react-i18next";
+import { ArrowRight, Eye, EyeOff, Moon, ShieldCheck, Sun, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { channelUiPresentation } from "@/channel-plugins/registry";
 import { Sidebar } from "@/components/Sidebar";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
