@@ -100,6 +100,18 @@ const LazyHighlightedCode = lazy(async () => {
             fontFamily: CODE_FONT_STACK,
             userSelect: "none",
           }}
+          // Safety net: when soft wrap and line numbers are both on, the library
+          // wraps every line in `display: flex`, and Chromium serializes each flex
+          // item as its own line when copying a selection (`bantime = 1h` becomes
+          // `bantime\n\n=\n\n1h`). CodeBlock disables that combo (numbered blocks
+          // scroll horizontally); this inline override keeps flex line wrappers
+          // from leaking back in if the combo ever returns. Spread order in the
+          // library: lineProps wins over its flex default.
+          lineProps={{
+            style: {
+              display: "inline",
+            },
+          }}
           PreTag="pre"
           showLineNumbers={showLineNumbers}
           wrapLongLines={wrapLongLines}
@@ -154,8 +166,10 @@ function CodeTextBlock({
       <code className="text-inherit">
         {showLineNumbers ? (
           lines.map((line, index) => (
-            <span key={index} className="flex min-w-max">
-              <span className="w-10 shrink-0 select-none pr-4 text-right text-muted-foreground/60">
+            // Inline wrappers only: flex line wrappers make Chromium copy each
+            // flex item (number / text) on a separate line.
+            <span key={index}>
+              <span className="inline-block w-10 select-none pr-4 text-right text-muted-foreground/60">
                 {index + 1}
               </span>
               <span className="whitespace-pre">{renderText(line || " ")}</span>
@@ -188,6 +202,10 @@ export function CodeBlock({
   const plainCode = useMemo(() => renderAnsi ? stripAnsi(code) : code, [renderAnsi, code]);
   const isDark = useThemeValue() === "dark";
   const hasChrome = chrome === "default";
+  // Numbered blocks scroll horizontally instead of soft-wrapping: the library's
+  // wrap + line numbers combo produces `display: flex` line wrappers that corrupt
+  // selection copy in Chromium (each flex item is copied on its own line).
+  const softWrap = wrapLongLines && !showLineNumbers;
   const syntaxLanguage = normalizeCodeLanguage(language);
   const copyLabel = copied ? t("code.copied") : t("code.copyAria");
 
@@ -233,7 +251,7 @@ export function CodeBlock({
             isDark={isDark}
             chrome={chrome}
             showLineNumbers={showLineNumbers}
-            wrapLongLines={wrapLongLines}
+            wrapLongLines={softWrap}
           />
         </Suspense>
       ) : (

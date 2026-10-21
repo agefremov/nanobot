@@ -10,24 +10,32 @@ const mockedStyles = vi.hoisted(() => ({
   light: { pre: { background: "#fff" } },
 }));
 
+const highlightedProps = vi.hoisted(() => ({
+  current: {} as Record<string, unknown>,
+}));
+
 vi.mock("react-syntax-highlighter/dist/esm/prism-async-light", () => ({
   default: ({
     children,
     language,
     style,
+    ...props
   }: {
     children: string;
     language?: string;
     style: Record<string, unknown>;
-  }) => (
-    <pre
-      data-testid="highlighted-code"
-      data-language={language}
-      data-theme={style === mockedStyles.dark ? "dark" : "light"}
-    >
-      <code>{children}</code>
-    </pre>
-  ),
+  }) => {
+    highlightedProps.current = props;
+    return (
+      <pre
+        data-testid="highlighted-code"
+        data-language={language}
+        data-theme={style === mockedStyles.dark ? "dark" : "light"}
+      >
+        <code>{children}</code>
+      </pre>
+    );
+  },
 }));
 
 vi.mock("react-syntax-highlighter/dist/esm/styles/prism/one-dark", () => ({
@@ -57,6 +65,42 @@ describe("CodeBlock", () => {
     } finally {
       Reflect.deleteProperty(navigator, "clipboard");
     }
+  });
+
+  it("numbers blocks with horizontal scroll and inline-safe line wrappers", async () => {
+    render(
+      <CodeBlock
+        language="ini"
+        code={"bantime  = 1h\nfindtime = 10m"}
+        showLineNumbers
+      />,
+    );
+    await screen.findByTestId("highlighted-code");
+    // Numbered blocks never soft-wrap: that combo makes the library emit flex
+    // line wrappers, and Chromium copies each flex item on a separate line.
+    expect(highlightedProps.current.wrapLongLines).toBe(false);
+    const lineProps = highlightedProps.current.lineProps as {
+      style?: { display?: string };
+    };
+    expect(lineProps.style?.display).toBe("inline");
+  });
+
+  it("keeps soft wrap for code blocks without line numbers", async () => {
+    render(
+      <CodeBlock language="bash" code="sudo systemctl restart nanobot_age.service" />,
+    );
+    await screen.findByTestId("highlighted-code");
+    expect(highlightedProps.current.wrapLongLines).toBe(true);
+  });
+
+  it("renders numbered fallback lines without flex wrappers", () => {
+    const source = "bantime  = 1h\nfindtime = 10m";
+    const { container } = render(
+      <CodeBlock code={source} highlight={false} showLineNumbers />,
+    );
+    const fallback = screen.getByTestId("plain-code-fallback");
+    expect(fallback.querySelector(".flex")).toBeNull();
+    expect(container.querySelectorAll(".inline-block").length).toBe(2);
   });
 
   it("renders long plain text with Unicode in full", () => {
