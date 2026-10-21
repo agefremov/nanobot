@@ -76,7 +76,6 @@ import type {
 } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Disclosure } from "@/components/ui/disclosure";
 import {
   fetchPairingRequests,
   fetchSettings,
@@ -468,32 +467,6 @@ function AuthForm({
               </p>
             ) : null}
           </form>
-          <Disclosure
-            className="mt-4"
-            summaryClassName="flex min-h-11 items-center justify-center gap-1.5 rounded-compact text-[13px] text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-            contentClassName="rounded-control bg-muted/50 p-4 text-sm leading-6 text-muted-foreground"
-            summary={(
-              <>
-                <span>{t("app.auth.helpTitle")}</span>
-                <ChevronDown className="h-3.5 w-3.5 shrink-0 transition-transform group-data-[state=open]/disclosure:rotate-180 motion-reduce:transition-none" strokeWidth={1.5} aria-hidden />
-              </>
-            )}
-          >
-            <p>{t("app.auth.helpConfig")}</p>
-            <code className="mt-2 block rounded-compact bg-background px-3 py-2 font-mono text-xs text-foreground [overflow-wrap:anywhere]">
-              ~/.nanobot/config.json
-            </code>
-            <p className="mt-4">{t("app.auth.helpSecret")}</p>
-            <code className="mt-2 block rounded-compact bg-background px-3 py-2 font-mono text-xs text-foreground [overflow-wrap:anywhere]">
-              channels.websocket.tokenIssueSecret
-            </code>
-            <p className="mt-3">
-              <Trans
-                i18nKey="app.auth.helpFallback"
-                components={{ code: <code className="font-mono text-xs text-foreground [overflow-wrap:anywhere]" /> }}
-              />
-            </p>
-          </Disclosure>
         </section>
       </div>
     </main>
